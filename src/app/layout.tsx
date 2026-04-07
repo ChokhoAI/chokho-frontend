@@ -18,7 +18,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Chokho — Smart Waste Management",
+  title: "Chokho AI",
   description:
     "AI-powered civic waste management for Dehradun, Haridwar & Rishikesh",
 };
