@@ -20,11 +20,11 @@ export default function RoutesPage() {
       </div>
 
       {/* Map */}
-      <Card className="border-border/50 overflow-hidden text-black z-0">
-        <div className="h-72 relative z-0">
+      <div className="overflow-hidden rounded-xl text-black z-0 relative">
+        <div className="h-[500px] relative z-0">
           <MapDynamic type="admin-routes" />
         </div>
-      </Card>
+      </div>
 
       {/* Route Cards */}
       <div className="grid grid-cols-2 gap-4">

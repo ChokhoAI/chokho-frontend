@@ -27,7 +27,7 @@ export default function HeatmapPage() {
       </div>
 
       {/* Map */}
-      <Card className="border-border/50 overflow-hidden text-black z-0">
+      <div className="overflow-hidden rounded-xl text-black z-0 relative">
         <div className="h-[500px] relative z-0">
           <MapDynamic type="heatmap" />
           {/* Legend */}
@@ -46,7 +46,7 @@ export default function HeatmapPage() {
             <Layers className="h-4 w-4 text-muted-foreground" />
           </div>
         </div>
-      </Card>
+      </div>
 
       {/* High Severity Complaints */}
       <div>
