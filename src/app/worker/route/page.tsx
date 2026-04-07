@@ -28,12 +28,12 @@ export default function WorkerRoute() {
       </div>
 
       {/* Map */}
-      <Card className="border-border/50 overflow-hidden text-black z-0">
+      <div className="overflow-hidden rounded-xl text-black z-0 relative">
         <div className="h-[300px] sm:h-[400px] lg:h-[500px] relative z-0">
           <MapDynamic type="worker-route" routeId={route.id} />
           <Badge className="absolute top-3 right-3 text-[10px] z-10 shadow-md">LIVE</Badge>
         </div>
-      </Card>
+      </div>
 
       {/* Route Stats */}
       <div className="grid grid-cols-3 gap-2">
