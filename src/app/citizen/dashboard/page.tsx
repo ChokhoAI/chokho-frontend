@@ -1,11 +1,11 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { dashboardStats, complaints } from "@/lib/mock-data";
-import { AlertTriangle, CheckCircle2, Clock, MapPin, Plus, Recycle, TrendingUp } from "lucide-react";
+import { dashboardStats, complaints, getSeverityBorder } from "@/lib/mock-data";
+import { AlertTriangle, CheckCircle2, MapPin, Plus, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
 export default function CitizenDashboard() {
@@ -16,7 +16,7 @@ export default function CitizenDashboard() {
       {/* Greeting */}
       <div>
         <h1 className="text-xl font-serif font-semibold">Good Morning, Rahul</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">Ward 12 — Clock Tower Area</p>
+        <p className="text-sm text-muted-foreground mt-0.5">Dehradun Area</p>
       </div>
 
       {/* Area Cleanliness Score */}
@@ -40,9 +40,9 @@ export default function CitizenDashboard() {
       <div className="grid grid-cols-3 gap-3">
         <Card className="border-border/50">
           <CardContent className="p-3 text-center">
-            <Recycle className="h-4 w-4 text-primary mx-auto mb-1.5" />
-            <p className="text-lg font-serif font-bold">{dashboardStats.totalBins}</p>
-            <p className="text-[10px] text-muted-foreground">Active Bins</p>
+            <AlertTriangle className="h-4 w-4 text-amber-500 mx-auto mb-1.5" />
+            <p className="text-lg font-serif font-bold">{dashboardStats.totalComplaints}</p>
+            <p className="text-[10px] text-muted-foreground">Complaints</p>
           </CardContent>
         </Card>
         <Card className="border-border/50">
@@ -54,25 +54,12 @@ export default function CitizenDashboard() {
         </Card>
         <Card className="border-border/50">
           <CardContent className="p-3 text-center">
-            <AlertTriangle className="h-4 w-4 text-amber-500 mx-auto mb-1.5" />
+            <AlertTriangle className="h-4 w-4 text-destructive mx-auto mb-1.5" />
             <p className="text-lg font-serif font-bold">{dashboardStats.totalComplaints - dashboardStats.resolvedComplaints}</p>
             <p className="text-[10px] text-muted-foreground">Pending</p>
           </CardContent>
         </Card>
       </div>
-
-      {/* Next Pickup */}
-      <Card className="border-border/50 bg-primary/5">
-        <CardContent className="p-4 flex items-center gap-4">
-          <div className="h-10 w-10 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">
-            <Clock className="h-5 w-5 text-primary" />
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium">Next Scheduled Pickup</p>
-            <p className="text-xs text-muted-foreground">Tomorrow, 7:00 AM — Ward 12</p>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Quick Action */}
       <Link href="/citizen/complaints/new">
@@ -90,22 +77,27 @@ export default function CitizenDashboard() {
         <div className="space-y-2">
           {recentComplaints.map((c) => (
             <Link key={c.id} href={`/citizen/complaints/${c.id}`}>
-              <Card className="border-border/50 hover:bg-muted/30 transition-colors cursor-pointer">
+              <Card className={`border-l-4 ${getSeverityBorder(c.severityScore)} ${c.cleaned ? "bg-emerald-500/5" : ""} hover:bg-muted/30 transition-colors cursor-pointer mb-2`}>
                 <CardContent className="p-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{c.title}</p>
+                      <p className="text-sm font-medium truncate">{c.category} — {c.location}</p>
                       <div className="flex items-center gap-2 mt-1">
                         <MapPin className="h-3 w-3 text-muted-foreground shrink-0" />
                         <p className="text-xs text-muted-foreground truncate">{c.location}</p>
                       </div>
                     </div>
-                    <Badge
-                      variant={c.status === "resolved" ? "secondary" : c.status === "in-progress" ? "default" : "outline"}
-                      className="text-[10px] shrink-0"
-                    >
-                      {c.status}
-                    </Badge>
+                    <div className="flex flex-col items-end gap-1">
+                      <Badge
+                        variant={c.status === "resolved" ? "secondary" : c.status === "in-progress" ? "default" : "outline"}
+                        className="text-[10px] shrink-0"
+                      >
+                        {c.status}
+                      </Badge>
+                      <span className={`text-[10px] font-mono font-bold ${c.severityScore >= 8 ? "text-red-500" : c.severityScore >= 5 ? "text-orange-500" : "text-amber-400"}`}>
+                        {c.severityScore}/10
+                      </span>
+                    </div>
                   </div>
                   <p className="text-[10px] text-muted-foreground mt-2 font-mono">{c.id}</p>
                 </CardContent>

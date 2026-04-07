@@ -4,13 +4,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { complaints } from "@/lib/mock-data";
-import { ArrowLeft, MapPin, Clock, User, Bot, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, User, Bot, CheckCircle2, ImageIcon } from "lucide-react";
 import Link from "next/link";
 import { use } from "react";
 
 export default function ComplaintDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const complaint = complaints.find((c) => c.id === id) || complaints[0];
+
+  const severityColor = complaint.severityScore >= 8 ? "text-red-500" : complaint.severityScore >= 5 ? "text-orange-500" : "text-amber-400";
+  const severityBg = complaint.severityScore >= 8 ? "bg-red-500/10" : complaint.severityScore >= 5 ? "bg-orange-500/10" : "bg-amber-400/10";
 
   const timeline = [
     { time: "08:30 AM", label: "Complaint Filed", desc: complaint.citizenName, icon: User, done: true },
@@ -32,26 +35,53 @@ export default function ComplaintDetail({ params }: { params: Promise<{ id: stri
       </div>
 
       {/* Status */}
-      <Card className="border-border/50">
+      <Card className={`border-border/50 ${complaint.cleaned ? "bg-emerald-500/5" : ""}`}>
         <CardContent className="p-4">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <h2 className="text-sm font-semibold">{complaint.title}</h2>
+              <h2 className="text-sm font-semibold">{complaint.category} — {complaint.location}</h2>
               <div className="flex items-center gap-1.5 mt-1.5">
                 <MapPin className="h-3 w-3 text-muted-foreground" />
                 <p className="text-xs text-muted-foreground">{complaint.location}</p>
               </div>
             </div>
-            <Badge variant={complaint.status === "resolved" ? "secondary" : "default"} className="text-[10px]">{complaint.status}</Badge>
+            <div className="flex flex-col items-end gap-1">
+              <Badge variant={complaint.status === "resolved" ? "secondary" : "default"} className="text-[10px]">{complaint.status}</Badge>
+              <span className={`text-xs font-mono font-bold ${severityColor}`}>{complaint.severityScore}/10</span>
+            </div>
           </div>
           <Separator className="my-3" />
-          <p className="text-sm text-muted-foreground">{complaint.description}</p>
-          <div className="flex items-center gap-3 mt-3">
+          <div className="flex items-center gap-3">
             <Badge variant="outline" className="text-[10px]">{complaint.category}</Badge>
             <Badge variant="outline" className="text-[10px]">{complaint.priority} priority</Badge>
+            {complaint.cleaned && <Badge variant="outline" className="text-[10px] text-emerald-500 border-emerald-500/30">Cleaned</Badge>}
           </div>
         </CardContent>
       </Card>
+
+      {/* Before / After Images */}
+      {complaint.imageUrl && (
+        <Card className="border-border/50">
+          <CardContent className="p-4">
+            <p className="text-xs font-semibold mb-3 uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <ImageIcon className="h-3 w-3" />
+              {complaint.afterImageUrl ? "Before & After" : "Evidence Photo"}
+            </p>
+            <div className={`grid ${complaint.afterImageUrl ? "grid-cols-2 gap-3" : "grid-cols-1"}`}>
+              <div>
+                {complaint.afterImageUrl && <p className="text-[10px] text-muted-foreground mb-1.5">Before</p>}
+                <img src={complaint.imageUrl} alt="Before" className="w-full h-40 object-cover rounded-lg" />
+              </div>
+              {complaint.afterImageUrl && (
+                <div>
+                  <p className="text-[10px] text-muted-foreground mb-1.5">After</p>
+                  <img src={complaint.afterImageUrl} alt="After" className="w-full h-40 object-cover rounded-lg" />
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* AI Analysis */}
       {complaint.aiAnalysis && (

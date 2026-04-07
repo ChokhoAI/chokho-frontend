@@ -2,14 +2,14 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Package, Clock, MapPin, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, AlertTriangle, Clock, MapPin, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 
 const history = [
-  { date: "Today", routes: [{ id: "RT-007", name: "Clock Tower Circuit", bins: 34, time: "3h 12m", status: "active" }] },
-  { date: "Yesterday", routes: [{ id: "RT-007", name: "Clock Tower Circuit", bins: 42, time: "3h 45m", status: "completed" }, { id: "RT-014", name: "ISBT Extension", bins: 18, time: "1h 30m", status: "completed" }] },
-  { date: "Apr 4, 2026", routes: [{ id: "RT-007", name: "Clock Tower Circuit", bins: 38, time: "3h 20m", status: "completed" }] },
-  { date: "Apr 3, 2026", routes: [{ id: "RT-003", name: "Rajpur Road North", bins: 45, time: "4h 05m", status: "completed" }] },
+  { date: "Today", routes: [{ id: "RT-007", name: "Central Sector R1", complaints: 3, time: "3h 12m", status: "active" }] },
+  { date: "Yesterday", routes: [{ id: "RT-007", name: "Central Sector R1", complaints: 5, time: "3h 45m", status: "completed" }, { id: "RT-014", name: "ISBT Extension", complaints: 2, time: "1h 30m", status: "completed" }] },
+  { date: "Apr 4, 2026", routes: [{ id: "RT-007", name: "Central Sector R1", complaints: 4, time: "3h 20m", status: "completed" }] },
+  { date: "Apr 3, 2026", routes: [{ id: "RT-003", name: "South Sector R2", complaints: 6, time: "4h 05m", status: "completed" }] },
 ];
 
 export default function WorkerHistory() {
@@ -22,7 +22,7 @@ export default function WorkerHistory() {
 
       {/* Stats Overview */}
       <div className="grid grid-cols-3 gap-2">
-        <Card className="border-border/50"><CardContent className="p-3 text-center"><p className="text-lg font-serif font-bold">247</p><p className="text-[10px] text-muted-foreground">Bins This Month</p></CardContent></Card>
+        <Card className="border-border/50"><CardContent className="p-3 text-center"><p className="text-lg font-serif font-bold">42</p><p className="text-[10px] text-muted-foreground">Complaints This Month</p></CardContent></Card>
         <Card className="border-border/50"><CardContent className="p-3 text-center"><p className="text-lg font-serif font-bold">28</p><p className="text-[10px] text-muted-foreground">Routes Done</p></CardContent></Card>
         <Card className="border-border/50"><CardContent className="p-3 text-center"><p className="text-lg font-serif font-bold">98%</p><p className="text-[10px] text-muted-foreground">On-Time</p></CardContent></Card>
       </div>
@@ -44,7 +44,7 @@ export default function WorkerHistory() {
                   </div>
                   <p className="text-sm font-medium">{r.name}</p>
                   <div className="flex items-center gap-4 mt-2 text-[10px] text-muted-foreground">
-                    <span className="flex items-center gap-1"><Package className="h-3 w-3" />{r.bins} bins</span>
+                    <span className="flex items-center gap-1"><AlertTriangle className="h-3 w-3" />{r.complaints} complaints</span>
                     <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{r.time}</span>
                   </div>
                 </CardContent>

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { dashboardStats, complaints, routes, chartData } from "@/lib/mock-data";
-import { Recycle, Users, AlertTriangle, TrendingUp, Truck, MapPin, Clock } from "lucide-react";
+import { Users, AlertTriangle, TrendingUp, Truck, MapPin, Clock } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip, PieChart, Pie, Cell } from "recharts";
 
 const PIE_COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))", "hsl(var(--chart-5))"];
@@ -20,9 +20,9 @@ export default function AdminDashboard() {
       {/* Stats Grid */}
       <div className="grid grid-cols-4 gap-4">
         {[
-          { label: "Active Bins", value: dashboardStats.totalBins.toLocaleString(), icon: Recycle, color: "text-primary", sub: "IoT Connected" },
+          { label: "Total Complaints", value: dashboardStats.totalComplaints.toString(), icon: AlertTriangle, color: "text-amber-500", sub: `${dashboardStats.resolvedComplaints} resolved` },
           { label: "Workers On Shift", value: dashboardStats.activeWorkers.toString(), icon: Users, color: "text-emerald-500", sub: `of 186 total` },
-          { label: "Open Complaints", value: (dashboardStats.totalComplaints - dashboardStats.resolvedComplaints).toString(), icon: AlertTriangle, color: "text-amber-500", sub: `${dashboardStats.resolvedComplaints} resolved` },
+          { label: "Open Complaints", value: (dashboardStats.totalComplaints - dashboardStats.resolvedComplaints).toString(), icon: AlertTriangle, color: "text-red-500", sub: `pending action` },
           { label: "Fleet Active", value: `${dashboardStats.vehiclesActive}/${dashboardStats.totalVehicles}`, icon: Truck, color: "text-blue-400", sub: `${dashboardStats.activeRoutes} routes` },
         ].map((stat) => (
           <Card key={stat.label} className="border-border/50">
@@ -42,7 +42,7 @@ export default function AdminDashboard() {
       <Card className="border-border/50">
         <CardContent className="p-5">
           <div className="flex items-center justify-between mb-3">
-            <div><p className="text-sm font-medium">System Efficiency</p><p className="text-xs text-muted-foreground">Based on collection rate and complaints</p></div>
+            <div><p className="text-sm font-medium">System Efficiency</p><p className="text-xs text-muted-foreground">Based on resolution rate and response time</p></div>
             <div className="flex items-center gap-2"><TrendingUp className="h-4 w-4 text-emerald-500" /><span className="text-2xl font-serif font-bold">{dashboardStats.efficiency}%</span></div>
           </div>
           <Progress value={dashboardStats.efficiency} className="h-2" />
@@ -98,7 +98,7 @@ export default function AdminDashboard() {
           <CardContent className="space-y-3">
             {routes.filter(r => r.status === "active").map((r) => (
               <div key={r.id} className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 transition-colors">
-                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-[10px] font-mono text-primary font-bold">{Math.round((r.completedBins / r.totalBins) * 100)}%</div>
+                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-[10px] font-mono text-primary font-bold">{r.stops.length}</div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{r.name}</p>
                   <p className="text-[10px] text-muted-foreground">{r.assignedWorker} • {r.distance}</p>
@@ -114,9 +114,9 @@ export default function AdminDashboard() {
           <CardContent className="space-y-3">
             {complaints.slice(0, 4).map((c) => (
               <div key={c.id} className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 transition-colors">
-                <div className={`h-2 w-2 rounded-full shrink-0 ${c.priority === "critical" ? "bg-destructive" : c.priority === "high" ? "bg-amber-500" : "bg-muted-foreground"}`} />
+                <div className={`h-2 w-2 rounded-full shrink-0 ${c.severityScore >= 8 ? "bg-red-500" : c.severityScore >= 5 ? "bg-orange-500" : "bg-amber-400"}`} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm truncate">{c.title}</p>
+                  <p className="text-sm truncate">{c.category} — {c.location}</p>
                   <div className="flex items-center gap-1.5 mt-0.5"><MapPin className="h-3 w-3 text-muted-foreground" /><p className="text-[10px] text-muted-foreground truncate">{c.location}</p></div>
                 </div>
                 <Badge variant={c.status === "resolved" ? "secondary" : c.status === "in-progress" ? "default" : "outline"} className="text-[9px] shrink-0">{c.status}</Badge>

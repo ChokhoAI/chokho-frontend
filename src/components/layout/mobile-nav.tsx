@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ClipboardList, PlusCircle, User } from "lucide-react";
+import { Home, ClipboardList, PlusCircle, User, Moon, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 
 const citizenLinks = [
   { href: "/citizen/dashboard", icon: Home, label: "Home" },
@@ -22,6 +24,13 @@ const workerLinks = [
 
 export function MobileNav({ role }: { role: "citizen" | "worker" }) {
   const pathname = usePathname();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const links = role === "citizen" ? citizenLinks : workerLinks;
 
   return (
@@ -29,11 +38,20 @@ export function MobileNav({ role }: { role: "citizen" | "worker" }) {
       {/* Top Header */}
       <header className="sticky top-0 z-50 flex items-center justify-between px-4 py-3 bg-background/80 backdrop-blur-xl border-b border-border">
         <Link href={`/${role}/dashboard`} className="flex items-center gap-2">
-          <Image src="/logo.png" alt="Chokho" width={32} height={32} className="rounded-sm" />
+          <Image src="/logo.png" alt="Chokho" width={28} height={28} className="rounded-sm" />
+          <span className="text-sm font-serif font-bold">CHOKHO</span>
         </Link>
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-xs font-mono text-muted-foreground">ONLINE</span>
+          <button 
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="p-2 rounded-full hover:bg-muted transition-colors flex items-center justify-center"
+          >
+            {mounted && theme === "dark" ? (
+              <Sun className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <Moon className="h-4 w-4 text-muted-foreground" />
+            )}
+          </button>
         </div>
       </header>
       {/* Bottom Navigation */}

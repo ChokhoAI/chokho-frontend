@@ -5,13 +5,10 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import {
   LayoutDashboard,
-  BarChart3,
   Map,
   MessageSquareWarning,
   Users,
   Truck,
-  Settings,
-  HelpCircle,
   LogOut,
   Flame,
 } from "lucide-react";
@@ -26,16 +23,11 @@ const sidebarLinks = [
   { href: "/admin/vehicles", icon: Truck, label: "Vehicles" },
 ];
 
-const bottomLinks = [
-  { href: "#", icon: Settings, label: "Settings" },
-  { href: "#", icon: HelpCircle, label: "Support" },
-];
-
 export function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 flex flex-col bg-sidebar border-r border-sidebar-border">
+    <aside className="fixed left-0 top-0 z-40 h-screen w-64 hidden md:flex flex-col bg-sidebar border-r border-sidebar-border">
       {/* Logo */}
       <div className="flex items-center gap-3 px-6 py-5 border-b border-sidebar-border">
         <Image src="/logo.png" alt="Chokho" width={36} height={36} className="rounded-sm" />
@@ -70,18 +62,8 @@ export function AdminSidebar() {
         })}
       </nav>
 
-      {/* Bottom */}
-      <div className="px-3 py-4 border-t border-sidebar-border space-y-1">
-        {bottomLinks.map((link) => (
-          <Link
-            key={link.label}
-            href={link.href}
-            className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
-          >
-            <link.icon className="h-4 w-4" />
-            <span>{link.label}</span>
-          </Link>
-        ))}
+      {/* Bottom — just logout */}
+      <div className="px-3 py-4 border-t border-sidebar-border">
         <button className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-destructive hover:bg-destructive/10 transition-colors w-full">
           <LogOut className="h-4 w-4" />
           <span>Logout</span>

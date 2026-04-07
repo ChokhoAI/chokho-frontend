@@ -1,11 +1,11 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { workers } from "@/lib/mock-data";
-import { Search, Filter, Phone, MapPin, Star } from "lucide-react";
+import { Search, Filter, Phone } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export default function WorkersManagement() {
@@ -39,13 +39,14 @@ export default function WorkersManagement() {
                 </div>
               </div>
               <div className="mt-3 space-y-1.5">
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><MapPin className="h-3 w-3" />{w.ward}</div>
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><Phone className="h-3 w-3" />{w.phone}</div>
+                {w.shiftStart && w.shiftEnd && (
+                  <div className="text-xs text-muted-foreground">Shift: {w.shiftStart} – {w.shiftEnd}</div>
+                )}
               </div>
               <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
-                <div className="flex items-center gap-1"><Star className="h-3 w-3 text-amber-500" /><span className="text-xs font-medium">{w.rating}</span></div>
-                <span className="text-[10px] text-muted-foreground">{w.binsCollected} bins today</span>
                 {w.assignedRoute && <Badge variant="outline" className="text-[9px]">{w.assignedRoute}</Badge>}
+                {!w.assignedRoute && <span className="text-[10px] text-muted-foreground">No route assigned</span>}
               </div>
             </CardContent>
           </Card>

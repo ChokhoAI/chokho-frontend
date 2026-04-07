@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,9 +30,10 @@ export default function ComplaintsManagement() {
               <thead>
                 <tr className="border-b border-border">
                   <th className="text-left p-4 text-xs font-medium text-muted-foreground">ID</th>
-                  <th className="text-left p-4 text-xs font-medium text-muted-foreground">Complaint</th>
+                  <th className="text-left p-4 text-xs font-medium text-muted-foreground">Category</th>
                   <th className="text-left p-4 text-xs font-medium text-muted-foreground">Location</th>
                   <th className="text-left p-4 text-xs font-medium text-muted-foreground">Citizen</th>
+                  <th className="text-left p-4 text-xs font-medium text-muted-foreground">Severity</th>
                   <th className="text-left p-4 text-xs font-medium text-muted-foreground">Priority</th>
                   <th className="text-left p-4 text-xs font-medium text-muted-foreground">Status</th>
                   <th className="text-left p-4 text-xs font-medium text-muted-foreground">Assigned</th>
@@ -43,9 +44,14 @@ export default function ComplaintsManagement() {
                 {complaints.map((c) => (
                   <tr key={c.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors cursor-pointer">
                     <td className="p-4 text-xs font-mono">{c.id}</td>
-                    <td className="p-4"><p className="text-sm font-medium max-w-[200px] truncate">{c.title}</p><p className="text-[10px] text-muted-foreground mt-0.5">{c.category}</p></td>
+                    <td className="p-4"><p className="text-sm font-medium">{c.category}</p></td>
                     <td className="p-4"><div className="flex items-center gap-1.5"><MapPin className="h-3 w-3 text-muted-foreground" /><span className="text-xs max-w-[150px] truncate">{c.location}</span></div></td>
                     <td className="p-4"><div className="flex items-center gap-1.5"><User className="h-3 w-3 text-muted-foreground" /><span className="text-xs">{c.citizenName}</span></div></td>
+                    <td className="p-4">
+                      <span className={`text-xs font-mono font-bold ${c.severityScore >= 8 ? "text-red-500" : c.severityScore >= 5 ? "text-orange-500" : "text-amber-400"}`}>
+                        {c.severityScore}/10
+                      </span>
+                    </td>
                     <td className="p-4"><Badge variant={c.priority === "critical" ? "destructive" : c.priority === "high" ? "default" : "outline"} className="text-[10px]">{c.priority}</Badge></td>
                     <td className="p-4"><Badge variant={c.status === "resolved" ? "secondary" : c.status === "in-progress" ? "default" : "outline"} className="text-[10px]">{c.status}</Badge></td>
                     <td className="p-4 text-xs text-muted-foreground">{c.assignedWorkerName || "—"}</td>

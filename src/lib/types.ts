@@ -5,18 +5,16 @@ export interface User {
   phone: string;
   role: "citizen" | "worker" | "admin";
   avatar?: string;
-  ward?: string;
   address?: string;
-  points?: number;
   employeeId?: string;
 }
 
 export interface Complaint {
   id: string;
-  title: string;
-  description: string;
   status: "pending" | "in-progress" | "resolved" | "rejected";
   priority: "low" | "medium" | "high" | "critical";
+  severityScore: number;
+  cleaned: boolean;
   location: string;
   coordinates: { lat: number; lng: number };
   createdAt: string;
@@ -25,7 +23,8 @@ export interface Complaint {
   citizenName: string;
   assignedWorkerId?: string;
   assignedWorkerName?: string;
-  images?: string[];
+  imageUrl?: string;
+  afterImageUrl?: string;
   aiAnalysis?: string;
   category: string;
 }
@@ -35,11 +34,8 @@ export interface Worker {
   name: string;
   employeeId: string;
   phone: string;
-  ward: string;
   status: "on-shift" | "off-duty" | "on-leave";
   assignedRoute?: string;
-  binsCollected: number;
-  rating: number;
   avatar?: string;
   shiftStart?: string;
   shiftEnd?: string;
@@ -52,21 +48,6 @@ export interface Vehicle {
   status: "active" | "maintenance" | "idle";
   assignedDriver?: string;
   assignedRoute?: string;
-  fuelLevel: number;
-  lastMaintenance: string;
-  capacity: string;
-  currentLocation?: { lat: number; lng: number };
-}
-
-export interface Bin {
-  id: string;
-  location: string;
-  coordinates: { lat: number; lng: number };
-  fillLevel: number;
-  type: "wet" | "dry" | "mixed";
-  status: "normal" | "overflow" | "maintenance";
-  lastCollected: string;
-  ward: string;
 }
 
 export interface Route {
@@ -76,22 +57,19 @@ export interface Route {
   status: "active" | "completed" | "pending";
   assignedWorker?: string;
   assignedVehicle?: string;
-  bins: string[];
+  stops: { sequenceNo: number; complaintId: string }[];
   distance: string;
   estimatedTime: string;
-  completedBins: number;
-  totalBins: number;
   startTime?: string;
   endTime?: string;
 }
 
 export interface DashboardStats {
-  totalBins: number;
   activeWorkers: number;
   totalComplaints: number;
   resolvedComplaints: number;
-  efficiency: number;
   activeRoutes: number;
   vehiclesActive: number;
   totalVehicles: number;
+  efficiency: number;
 }

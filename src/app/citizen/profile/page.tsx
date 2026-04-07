@@ -1,5 +1,7 @@
 "use client";
 
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,6 +12,13 @@ import { MapPin, Phone, Mail, Award, Bell, Moon, Shield, ChevronRight, LogOut } 
 import Link from "next/link";
 
 export default function CitizenProfile() {
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <div className="px-4 py-4 space-y-5">
       {/* Profile Header */}
@@ -39,23 +48,10 @@ export default function CitizenProfile() {
         </CardContent>
       </Card>
 
-      {/* Civic Points */}
-      <Card className="border-border/50 bg-primary/5">
-        <CardContent className="p-4 flex items-center gap-4">
-          <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center"><Award className="h-6 w-6 text-primary" /></div>
-          <div className="flex-1">
-            <p className="text-xs text-muted-foreground">Civic Points</p>
-            <p className="text-2xl font-serif font-bold">1,240</p>
-          </div>
-          <Badge variant="outline" className="text-[10px]">Gold Tier</Badge>
-        </CardContent>
-      </Card>
-
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         <Card className="border-border/50"><CardContent className="p-3 text-center"><p className="text-lg font-serif font-bold">12</p><p className="text-[10px] text-muted-foreground">Reports Filed</p></CardContent></Card>
         <Card className="border-border/50"><CardContent className="p-3 text-center"><p className="text-lg font-serif font-bold">10</p><p className="text-[10px] text-muted-foreground">Resolved</p></CardContent></Card>
-        <Card className="border-border/50"><CardContent className="p-3 text-center"><p className="text-lg font-serif font-bold">4.8</p><p className="text-[10px] text-muted-foreground">Rating</p></CardContent></Card>
       </div>
 
       {/* Settings */}
@@ -63,7 +59,13 @@ export default function CitizenProfile() {
         <CardContent className="p-4 space-y-3">
           <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Bell className="h-4 w-4 text-muted-foreground" /><span className="text-sm">Notifications</span></div><Switch defaultChecked /></div>
           <Separator />
-          <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Moon className="h-4 w-4 text-muted-foreground" /><span className="text-sm">Dark Mode</span></div><Switch defaultChecked /></div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3"><Moon className="h-4 w-4 text-muted-foreground" /><span className="text-sm">Dark Mode</span></div>
+            <Switch 
+              checked={mounted && theme === "dark"} 
+              onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")} 
+            />
+          </div>
           <Separator />
           <Link href="#" className="flex items-center justify-between"><div className="flex items-center gap-3"><Shield className="h-4 w-4 text-muted-foreground" /><span className="text-sm">Privacy & Security</span></div><ChevronRight className="h-4 w-4 text-muted-foreground" /></Link>
         </CardContent>

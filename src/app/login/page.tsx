@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import Link from "next/link";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -27,7 +27,7 @@ export default function LoginPage() {
       {/* Ambient background */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-primary/3 rounded-full blur-[150px] pointer-events-none" />
 
-      <Card className="w-full max-w-sm border-border/50 bg-card/80 backdrop-blur-sm">
+      <Card className="w-full max-w-sm border-border/50 bg-white/35 dark:bg-card/80 backdrop-blur-sm">
         <CardHeader className="text-center space-y-4">
           <div className="flex justify-center">
             <Image src="/logo.png" alt="Chokho" width={72} height={72} />
@@ -35,28 +35,25 @@ export default function LoginPage() {
           <div>
             <CardTitle className="text-2xl font-serif">Chokho</CardTitle>
             <CardDescription className="font-mono text-xs tracking-wider mt-1">
-              CIVIC INTELLIGENCE SENTINEL
+              SMART WASTE MANAGEMENT
             </CardDescription>
           </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
-            {/* Role Selection */}
-            <div className="flex gap-1 p-1 bg-muted rounded-lg">
-              {(["citizen", "worker", "admin"] as const).map((r) => (
-                <button
-                  key={r}
-                  type="button"
-                  onClick={() => setRole(r)}
-                  className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all capitalize ${
-                    role === r
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {r}
-                </button>
-              ))}
+            {/* Role Selection — Dropdown */}
+            <div className="space-y-2">
+              <Label htmlFor="role" className="text-xs">Sign in as</Label>
+              <Select value={role} onValueChange={(v) => setRole(v as typeof role)}>
+                <SelectTrigger id="role" className="bg-muted/50">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="citizen">Citizen</SelectItem>
+                  <SelectItem value="worker">Worker</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
@@ -71,12 +68,7 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-xs">Password</Label>
-                <Link href="#" className="text-xs text-primary hover:underline">
-                  Forgot password?
-                </Link>
-              </div>
+              <Label htmlFor="password" className="text-xs">Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -95,15 +87,6 @@ export default function LoginPage() {
                 "Sign in"
               )}
             </Button>
-
-            {role === "citizen" && (
-              <p className="text-center text-xs text-muted-foreground">
-                Don&apos;t have an account?{" "}
-                <Link href="/register" className="text-primary hover:underline">
-                  Register
-                </Link>
-              </p>
-            )}
 
             {role !== "citizen" && (
               <p className="text-center text-[10px] text-muted-foreground font-mono">

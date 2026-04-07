@@ -4,15 +4,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import { vehicles } from "@/lib/mock-data";
-import { Search, Filter, Fuel, Wrench, Truck } from "lucide-react";
+import { Search, Filter, Truck } from "lucide-react";
 
 export default function VehiclesManagement() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-serif font-bold">Fleet Management</h1><p className="text-sm text-muted-foreground mt-1">Monitor vehicles, fuel, and maintenance</p></div>
+        <div><h1 className="text-2xl font-serif font-bold">Fleet Management</h1><p className="text-sm text-muted-foreground mt-1">Monitor vehicle assignments</p></div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" className="gap-1.5 cursor-pointer"><Filter className="h-3.5 w-3.5" /> Filter</Button>
           <Button size="sm" className="cursor-pointer">Add Vehicle</Button>
@@ -34,9 +33,6 @@ export default function VehiclesManagement() {
                 <th className="text-left p-4 text-xs font-medium text-muted-foreground">Status</th>
                 <th className="text-left p-4 text-xs font-medium text-muted-foreground">Driver</th>
                 <th className="text-left p-4 text-xs font-medium text-muted-foreground">Route</th>
-                <th className="text-left p-4 text-xs font-medium text-muted-foreground">Fuel</th>
-                <th className="text-left p-4 text-xs font-medium text-muted-foreground">Capacity</th>
-                <th className="text-left p-4 text-xs font-medium text-muted-foreground">Last Service</th>
               </tr>
             </thead>
             <tbody>
@@ -55,17 +51,6 @@ export default function VehiclesManagement() {
                   <td className="p-4"><Badge variant={v.status === "active" ? "default" : v.status === "maintenance" ? "destructive" : "secondary"} className="text-[10px]">{v.status}</Badge></td>
                   <td className="p-4 text-sm">{v.assignedDriver || "—"}</td>
                   <td className="p-4 text-xs font-mono text-muted-foreground">{v.assignedRoute || "—"}</td>
-                  <td className="p-4">
-                    <div className="flex items-center gap-2">
-                      <Fuel className="h-3 w-3 text-muted-foreground" />
-                      <Progress value={v.fuelLevel} className="h-1.5 w-16" />
-                      <span className="text-[10px] text-muted-foreground">{v.fuelLevel}%</span>
-                    </div>
-                  </td>
-                  <td className="p-4 text-xs">{v.capacity}</td>
-                  <td className="p-4">
-                    <div className="flex items-center gap-1.5"><Wrench className="h-3 w-3 text-muted-foreground" /><span className="text-[10px] text-muted-foreground">{v.lastMaintenance}</span></div>
-                  </td>
                 </tr>
               ))}
             </tbody>

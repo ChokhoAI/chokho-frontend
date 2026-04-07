@@ -3,13 +3,17 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { bins, routes } from "@/lib/mock-data";
+import { routes, complaints, getSeverityBorder } from "@/lib/mock-data";
 import { ArrowLeft, Navigation, MapPin, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import MapDynamic from "@/components/map";
 
 export default function WorkerRoute() {
   const route = routes[0];
+  const routeComplaints = (route.stops || [])
+    .map(s => complaints.find(c => c.id === s.complaintId))
+    .filter((c): c is NonNullable<typeof c> => c !== undefined);
+  const resolvedStops = routeComplaints.filter(c => c.cleaned).length;
 
   return (
     <div className="px-4 py-4 space-y-4">
@@ -33,32 +37,36 @@ export default function WorkerRoute() {
 
       {/* Route Stats */}
       <div className="grid grid-cols-3 gap-2">
-        <Card className="border-border/50"><CardContent className="p-3 text-center"><p className="text-lg font-serif font-bold">{route.completedBins}</p><p className="text-[10px] text-muted-foreground">Done</p></CardContent></Card>
-        <Card className="border-border/50"><CardContent className="p-3 text-center"><p className="text-lg font-serif font-bold">{route.totalBins - route.completedBins}</p><p className="text-[10px] text-muted-foreground">Remaining</p></CardContent></Card>
+        <Card className="border-border/50"><CardContent className="p-3 text-center"><p className="text-lg font-serif font-bold">{resolvedStops}</p><p className="text-[10px] text-muted-foreground">Done</p></CardContent></Card>
+        <Card className="border-border/50"><CardContent className="p-3 text-center"><p className="text-lg font-serif font-bold">{routeComplaints.length - resolvedStops}</p><p className="text-[10px] text-muted-foreground">Remaining</p></CardContent></Card>
         <Card className="border-border/50"><CardContent className="p-3 text-center"><p className="text-lg font-serif font-bold">{route.estimatedTime}</p><p className="text-[10px] text-muted-foreground">ETA</p></CardContent></Card>
       </div>
 
-      {/* Bin List */}
+      {/* Complaint Stops */}
       <div>
-        <h2 className="text-sm font-semibold mb-3">Bin Stops</h2>
+        <h2 className="text-sm font-semibold mb-3">Complaint Stops</h2>
         <div className="space-y-2">
-          {bins.map((bin, i) => (
-            <Card key={bin.id} className={`border-border/50 ${i < 2 ? "opacity-50" : ""}`}>
+          {routeComplaints.map((c, i) => (
+            <Card key={c.id} className={`border-l-4 ${getSeverityBorder(c.severityScore)} ${c.cleaned ? "opacity-50" : ""}`}>
               <CardContent className="p-3 flex items-center gap-3">
-                <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold ${i < 2 ? "bg-emerald-500/20 text-emerald-500" : "bg-muted text-muted-foreground"}`}>
-                  {i < 2 ? <CheckCircle2 className="h-4 w-4" /> : i + 1}
+                <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold ${c.cleaned ? "bg-emerald-500/20 text-emerald-500" : "bg-muted text-muted-foreground"}`}>
+                  {c.cleaned ? <CheckCircle2 className="h-4 w-4" /> : i + 1}
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium">{bin.location}</p>
+                  <p className="text-sm font-medium">{c.category} — {c.location}</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-[10px] font-mono text-muted-foreground">{bin.id}</span>
-                    <Badge variant="outline" className="text-[9px]">{bin.fillLevel}% full</Badge>
+                    <span className="text-[10px] font-mono text-muted-foreground">{c.id}</span>
+                    <span className={`text-[10px] font-mono font-bold ${c.severityScore >= 8 ? "text-red-500" : c.severityScore >= 5 ? "text-orange-500" : "text-amber-400"}`}>
+                      Severity: {c.severityScore}
+                    </span>
                   </div>
                 </div>
-                {i >= 2 && (
-                  <Button size="sm" variant="outline" className="text-xs h-7 cursor-pointer">
-                    Collect
-                  </Button>
+                {!c.cleaned && (
+                  <Link href="/worker/verify">
+                    <Button size="sm" variant="outline" className="text-xs h-7 cursor-pointer">
+                      Verify
+                    </Button>
+                  </Link>
                 )}
               </CardContent>
             </Card>
