@@ -16,7 +16,6 @@ import { cn } from "@/lib/utils";
 
 const sidebarLinks = [
   { href: "/admin/dashboard", icon: LayoutDashboard, label: "Command Center" },
-  { href: "/admin/heatmap", icon: Flame, label: "Heatmap" },
   { href: "/admin/routes", icon: Map, label: "Route Optimization" },
   { href: "/admin/complaints", icon: MessageSquareWarning, label: "Citizen Reports" },
   { href: "/admin/workers", icon: Users, label: "Worker Logs" },

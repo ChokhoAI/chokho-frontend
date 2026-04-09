@@ -1,20 +1,53 @@
-import { Complaint, Worker, Vehicle, Route, DashboardStats } from "./types";
+import { Complaint, Worker, Vehicle, Route, AdminDashboardData, CitizenDashboardData, WorkerDashboardData, WorkerProfileData, CitizenProfileData, AdminComplaintData, WorkerRouteComplaint, AdminWorkerResponse, AdminVehicleResponse } from "./types";
 
-export const dashboardStats: DashboardStats = {
-  activeWorkers: 142,
+export const adminDashboardData: AdminDashboardData = {
+  name: "System Admin",
   totalComplaints: 89,
-  resolvedComplaints: 71,
-  activeRoutes: 28,
-  vehiclesActive: 34,
+  totalWorkers: 142,
+  totalCitizens: 540,
+  totalPendingComplaints: 18,
+  totalActiveVehicles: 34,
   totalVehicles: 42,
   efficiency: 92,
+};
+
+export const citizenDashboardData: CitizenDashboardData = {
+  complaintResolvedPercentage: 92,
+  totalComplaints: 12,
+  resolvedComplaints: 10,
+  pendingComplaints: 2,
+  name: "Rahul Sharma"
+};
+
+export const workerDashboardData: WorkerDashboardData = {
+  name: "Ramesh Negi",
+  empId: "EMP-4521",
+  vehicleNumber: "UK07 AB 1234",
+  routeStatus: "Active",
+  totalRouteComplaints: 8,
+  resolvedRouteComplaints: 3,
+  clusterId: "CLUSTER-WRD12-01"
+};
+
+export const workerProfileData: WorkerProfileData = {
+  name: "Ramesh Negi",
+  empId: "EMP-4521",
+  phone: "+91 98765 43210",
+  totalCompletedRoutes: 142,
+  totalVerifications: 56
+};
+
+export const citizenProfileData: CitizenProfileData = {
+  name: "Rahul Sharma",
+  username: "rahul_s",
+  phone: "+91 98765 43210",
+  address: "42, Clock Tower Road, Ward 12, Dehradun"
 };
 
 export const complaints: Complaint[] = [
   { 
     id: "CMP-2847", 
     status: "in-progress", 
-    priority: "high", 
     severityScore: 8,
     cleaned: false,
     location: "Clock Tower, Dehradun", 
@@ -27,12 +60,12 @@ export const complaints: Complaint[] = [
     assignedWorkerName: "Ramesh Negi", 
     category: "Overflow",
     imageUrl: "https://images.unsplash.com/photo-1605600659908-0ef719419d41?q=80&w=600&auto=format&fit=crop",
+    cleanedImageUrl: "https://images.unsplash.com/photo-1516245834210-c4c142787335?w=800&q=80",
     aiAnalysis: "AI Confidence: 94% — Severe waste accumulation spanning 2x2 meters. Organic decay detected." 
   },
   { 
     id: "CMP-2846", 
     status: "pending", 
-    priority: "critical",
     severityScore: 10,
     cleaned: false, 
     location: "Rajpur Road, Dehradun", 
@@ -47,7 +80,6 @@ export const complaints: Complaint[] = [
   { 
     id: "CMP-2845", 
     status: "resolved", 
-    priority: "medium", 
     severityScore: 4,
     cleaned: true,
     location: "Sector 5, Haridwar", 
@@ -60,12 +92,11 @@ export const complaints: Complaint[] = [
     assignedWorkerName: "Suresh Panwar", 
     category: "Missed Collection",
     imageUrl: "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?q=80&w=600&auto=format&fit=crop",
-    afterImageUrl: "https://images.unsplash.com/photo-1621255869389-9b97b0aae90f?q=80&w=600&auto=format&fit=crop"
+    cleanedImageUrl: "https://images.unsplash.com/photo-1621255869389-9b97b0aae90f?q=80&w=600&auto=format&fit=crop"
   },
   { 
     id: "CMP-2844", 
     status: "pending", 
-    priority: "low", 
     severityScore: 2,
     cleaned: false,
     location: "Har-ki-Pauri, Haridwar", 
@@ -79,7 +110,6 @@ export const complaints: Complaint[] = [
   { 
     id: "CMP-2843", 
     status: "in-progress", 
-    priority: "high", 
     severityScore: 7,
     cleaned: false,
     location: "MG Road, Rishikesh", 
@@ -95,7 +125,6 @@ export const complaints: Complaint[] = [
   { 
     id: "CMP-2842", 
     status: "resolved", 
-    priority: "medium", 
     severityScore: 5,
     cleaned: true,
     location: "Vasant Vihar, Dehradun", 
@@ -245,3 +274,71 @@ export function getSeverityBorder(score: number): string {
   if (score >= 5) return "border-l-orange-500";
   return "border-l-amber-400";
 }
+
+export const workerRouteComplaints: WorkerRouteComplaint[] = [
+  {
+    id: 1,
+    latitude: 30.3255,
+    longitude: 78.0421,
+    location: "Clock Tower, Dehradun",
+    imageUrl: "https://images.unsplash.com/photo-1605600659908-0ef719419d41?q=80&w=600&auto=format&fit=crop",
+    status: "IN_PROGRESS",
+    sequenceNo: 1,
+    severityScore: 8
+  },
+  {
+    id: 2,
+    latitude: 30.3442,
+    longitude: 78.0489,
+    location: "Rajpur Road, Dehradun",
+    imageUrl: "https://images.unsplash.com/photo-1595278069441-2cf29f8005a4?q=80&w=600&auto=format&fit=crop",
+    status: "PENDING",
+    sequenceNo: 2,
+    severityScore: 10
+  },
+  {
+    id: 3,
+    latitude: 30.3165,
+    longitude: 78.0322,
+    location: "Vasant Vihar, Dehradun",
+    imageUrl: "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?q=80&w=600&auto=format&fit=crop",
+    status: "PENDING",
+    sequenceNo: 3,
+    severityScore: 5
+  }
+];
+
+export function searchComplaints(query: string) {
+  return complaints.filter(c => 
+    c.location.toLowerCase().includes(query.toLowerCase()) || 
+    c.id.toString().toLowerCase().includes(query.toLowerCase())
+  );
+}
+
+export const adminComplaints: AdminComplaintData[] = complaints.map(c => ({
+  formattedId: String(c.id),
+  trashType: c.category.toUpperCase().replace(' ', '_'),
+  location: c.location,
+  citizenName: c.citizenName || "Unknown",
+  severityScore: c.severityScore,
+  volumeEstimate: "MEDIUM",
+  complaintStatus: c.status.toUpperCase(),
+  workerName: c.assignedWorkerName || "Unassigned",
+  date: c.createdAt
+}));
+
+export const adminWorkers: AdminWorkerResponse[] = workers.map(w => ({
+  workerId: w.id,
+  workerName: w.name,
+  phoneNo: w.phone,
+  vehicleNo: w.assignedRoute ? "UK07 AB 1234" : "N/A" // Simplified mapping
+}));
+
+export const adminVehicles: AdminVehicleResponse[] = vehicles.map(v => ({
+  vehicleId: v.id,
+  vehicleNo: v.registrationNumber,
+  vehicleStatus: v.status.toUpperCase() as any,
+  workerName: v.assignedDriver || "Unassigned"
+}));
+
+

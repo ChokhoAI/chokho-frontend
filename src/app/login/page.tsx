@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -88,7 +89,14 @@ export default function LoginPage() {
               )}
             </Button>
 
-            {role !== "citizen" && (
+            {role === "citizen" ? (
+              <p className="text-center text-[11px] text-muted-foreground pt-1">
+                Don&apos;t have an account?{" "}
+                <Link href="/register" className="text-primary font-bold hover:underline underline-offset-4">
+                  Sign up
+                </Link>
+              </p>
+            ) : (
               <p className="text-center text-[10px] text-muted-foreground font-mono">
                 Use your Employee ID to login
               </p>
@@ -99,8 +107,8 @@ export default function LoginPage() {
 
       {/* Footer */}
       <div className="absolute bottom-6 text-center">
-        <p className="text-[9px] font-mono text-muted-foreground tracking-wider">
-          LOC: 30.3165° N, 78.0322° E — SYS: NOMINAL
+        <p className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest opacity-80">
+          Towards a Trash-Free Uttarakhand — CHOKHO
         </p>
       </div>
     </div>

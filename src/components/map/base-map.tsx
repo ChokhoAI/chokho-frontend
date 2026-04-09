@@ -3,7 +3,7 @@
 import { MapContainer, TileLayer, Marker, Popup, Polyline, CircleMarker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { complaints, routes, vehicles, getSeverityColor } from "@/lib/mock-data";
+import { complaints, routes, searchComplaints, getSeverityColor, workerRouteComplaints, vehicles } from "@/lib/mock-data";
 import { Badge } from "@/components/ui/badge";
 
 // Fix leaflet icon issue in Next.js
@@ -53,27 +53,23 @@ export default function BaseMap({ type, routeId }: MapProps) {
   };
 
   if (type === "worker-route") {
-    const route = routes.find(r => r.id === routeId) || routes[0];
-    const routeComplaints = (route.stops || [])
-      .map(s => complaints.find(c => c.id === s.complaintId))
-      .filter((c): c is NonNullable<typeof c> => c !== undefined);
-    
-    const polylinePositions: [number, number][] = routeComplaints.map(c => [c.coordinates.lat, c.coordinates.lng]);
+    const stops = workerRouteComplaints;
+    const polylinePositions: [number, number][] = stops.map((s: any) => [s.latitude, s.longitude]);
     
     return (
-      <MapContainer center={routeComplaints.length > 0 ? [routeComplaints[0].coordinates.lat, routeComplaints[0].coordinates.lng] : center} zoom={13} zoomControl={false} attributionControl={false} style={{ height: "100%", width: "100%", zIndex: 1 }}>
+      <MapContainer center={stops.length > 0 ? [stops[0].latitude, stops[0].longitude] : center} zoom={13} zoomControl={false} attributionControl={false} style={{ height: "100%", width: "100%", zIndex: 1 }}>
         <TileLayer url={tileUrl} attribution={attribution} />
-        <Polyline positions={polylinePositions} color="hsl(var(--primary))" weight={4} opacity={0.7} />
+        <Polyline positions={polylinePositions} color="hsl(var(--primary))" weight={4} opacity={0.7} dashArray="5, 10" />
         
-        {routeComplaints.map((complaint) => (
-          <Marker key={complaint.id} position={[complaint.coordinates.lat, complaint.coordinates.lng]} icon={createColoredPin(severityHex(complaint.severityScore))}>
+        {stops.map((s: any) => (
+          <Marker key={s.id} position={[s.latitude, s.longitude]} icon={createColoredPin(severityHex(s.severityScore))}>
             <Popup>
               <div className="font-sans">
-                <p className="font-semibold text-sm mb-1">{complaint.location}</p>
+                <p className="font-semibold text-sm mb-1">{s.location}</p>
                 <div className="flex gap-2">
-                  <span className="text-xs text-muted-foreground">{complaint.id}</span>
-                  <span className="text-[10px] px-1.5 rounded-sm" style={{ color: severityHex(complaint.severityScore) }}>
-                    Severity: {complaint.severityScore}
+                  <span className="text-xs text-muted-foreground">ID: {s.id}</span>
+                  <span className="text-[10px] px-1.5 rounded-sm" style={{ backgroundColor: severityHex(s.severityScore) + '20', color: severityHex(s.severityScore) }}>
+                    Sequence: {s.sequenceNo}
                   </span>
                 </div>
               </div>
@@ -89,12 +85,12 @@ export default function BaseMap({ type, routeId }: MapProps) {
       <MapContainer center={center} zoom={13} zoomControl={false} attributionControl={false} style={{ height: "100%", width: "100%", zIndex: 1 }}>
         <TileLayer url={tileUrl} attribution={attribution} />
         
-        {routes.filter(r => r.status === "active").map((route, i) => {
+        {routes.filter(r => r.status === "active").map((route, i: number) => {
           const routeComplaints = (route.stops || [])
-            .map(s => complaints.find(c => c.id === s.complaintId))
+            .map((s: any) => complaints.find(c => c.id === s.complaintId))
             .filter((c): c is NonNullable<typeof c> => c !== undefined);
 
-          const polylinePositions: [number, number][] = routeComplaints.map(c => [c.coordinates.lat, c.coordinates.lng]);
+          const polylinePositions: [number, number][] = routeComplaints.map((c: any) => [c.coordinates.lat, c.coordinates.lng]);
           const colors = ["#D97706", "#10B981", "#3B82F6"];
           const color = colors[i % colors.length];
 
@@ -110,7 +106,7 @@ export default function BaseMap({ type, routeId }: MapProps) {
           );
         })}
 
-        {vehicles.filter(v => v.type === "truck" || v.type === "mini-truck").slice(0, 3).map((v, i) => (
+        {vehicles.filter(v => v.type === "truck" || v.type === "mini-truck").slice(0, 3).map((v, i: number) => (
            <Marker key={v.id} position={[center[0] + (i * 0.01), center[1] + (i * 0.015)]} icon={truckIcon}>
             <Popup className="font-sans text-sm font-semibold">{v.registrationNumber}</Popup>
            </Marker>
@@ -124,21 +120,20 @@ export default function BaseMap({ type, routeId }: MapProps) {
       <MapContainer center={center} zoom={12} zoomControl={false} attributionControl={false} style={{ height: "100%", width: "100%", zIndex: 1 }}>
         <TileLayer url={tileUrl} attribution={attribution} />
         
-        {/* Severity-based heatmap using sharp robust pins */}
-        {complaints.map((complaint) => {
-          const color = severityHex(complaint.severityScore);
+        {/* Using workerRouteComplaints for live sample points if complaints doesn't have coords */}
+        {workerRouteComplaints.map((s: any) => {
+          const color = severityHex(s.severityScore);
 
           return (
             <Marker 
-              key={`heat-${complaint.id}`} 
-              position={[complaint.coordinates.lat, complaint.coordinates.lng]} 
+              key={`heat-${s.id}`} 
+              position={[s.latitude, s.longitude]} 
               icon={createColoredPin(color)}
             >
               <Popup>
                 <div className="font-sans">
-                  <p className="font-semibold">{complaint.location}</p>
-                  <p className="text-xs mt-1">Severity: {complaint.severityScore}/10</p>
-                  <p className="text-xs">{complaint.category}</p>
+                  <p className="font-semibold">{s.location}</p>
+                  <p className="text-xs mt-1">Severity: {s.severityScore}/10</p>
                 </div>
               </Popup>
             </Marker>

@@ -14,17 +14,6 @@ export default function NewComplaint() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [aiAnalyzing, setAiAnalyzing] = useState(false);
   const [aiResult, setAiResult] = useState<{ category: string; severity: number; confidence: number } | null>(null);
-  const [gpsCoords, setGpsCoords] = useState<{ lat: number; lng: number } | null>(null);
-  const [gpsLoading, setGpsLoading] = useState(true);
-
-  // Auto-GPS on mount
-  useState(() => {
-    // Simulate GPS capture
-    setTimeout(() => {
-      setGpsCoords({ lat: 30.3255, lng: 78.0421 });
-      setGpsLoading(false);
-    }, 1200);
-  });
 
   const handleImageUpload = () => {
     // Simulate image capture
@@ -58,26 +47,6 @@ export default function NewComplaint() {
         </Link>
         <h1 className="text-lg font-serif font-semibold">Report Complaint</h1>
       </div>
-
-      {/* GPS Status */}
-      <Card className="border-border/50">
-        <CardContent className="p-3 flex items-center gap-3">
-          <MapPin className="h-4 w-4 text-primary shrink-0" />
-          {gpsLoading ? (
-            <div className="flex items-center gap-2">
-              <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">Capturing GPS location...</span>
-            </div>
-          ) : gpsCoords ? (
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-mono text-muted-foreground">{gpsCoords.lat.toFixed(4)}° N, {gpsCoords.lng.toFixed(4)}° E</span>
-              <Badge variant="outline" className="text-[9px] text-emerald-500 border-emerald-500/30">Locked</Badge>
-            </div>
-          ) : (
-            <span className="text-xs text-destructive">GPS unavailable</span>
-          )}
-        </CardContent>
-      </Card>
 
       {/* Image Upload — Primary Action */}
       <Card className="border-border/50">

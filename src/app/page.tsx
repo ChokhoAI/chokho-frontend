@@ -69,6 +69,9 @@ export default function LandingPage() {
                 <Moon className="h-4 w-4 text-muted-foreground" />
               )}
             </button>
+            <Link href="/heatmap" className="text-xs font-medium hover:text-primary transition-colors hidden sm:block">
+              Public Heatmap
+            </Link>
             <Link href="/login">
               <Button size="sm" className="cursor-pointer gap-1.5 text-xs sm:text-sm">
                 Login <ArrowRight className="h-3.5 w-3.5 hidden sm:block" />
@@ -103,11 +106,11 @@ export default function LandingPage() {
                   <Camera className="h-4 w-4" /> Report a Problem
                 </Button>
               </Link>
-              <a href="#how-it-works">
+              <Link href="/heatmap">
                 <Button variant="outline" size="lg" className="cursor-pointer h-11 sm:h-12 w-full sm:w-auto px-6">
-                  Learn How It Works
+                  <TrendingUp className="h-4 w-4 mr-2" /> View Public Heatmap
                 </Button>
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -238,7 +241,7 @@ export default function LandingPage() {
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="text-xs text-muted-foreground">{city.complaints} complaints</span>
-                      <Badge variant="outline" className="text-[9px]">{city.status}</Badge>
+                      <Badge variant="outline" className="text-[10px]">{city.status}</Badge>
                     </div>
                   </div>
                 ))}
@@ -254,18 +257,14 @@ export default function LandingPage() {
                     <p className="text-3xl sm:text-4xl font-serif font-bold text-primary">89</p>
                     <p className="text-sm text-muted-foreground mt-1">Active Complaints</p>
                   </div>
-                  <div className="grid grid-cols-3 gap-4 mt-4 sm:mt-6">
+                  <div className="grid grid-cols-2 gap-4 mt-4 sm:mt-6">
                     <div>
                       <p className="text-lg font-serif font-bold text-red-500">12</p>
-                      <p className="text-[10px] text-muted-foreground">Critical</p>
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Severe</p>
                     </div>
                     <div>
-                      <p className="text-lg font-serif font-bold text-orange-500">31</p>
-                      <p className="text-[10px] text-muted-foreground">Medium</p>
-                    </div>
-                    <div>
-                      <p className="text-lg font-serif font-bold text-amber-400">46</p>
-                      <p className="text-[10px] text-muted-foreground">Low</p>
+                      <p className="text-lg font-serif font-bold text-amber-500">77</p>
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-widest">General</p>
                     </div>
                   </div>
                 </div>
@@ -293,7 +292,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-2.5">
             <Image src="/logo.png" alt="Chokho" width={24} height={24} className="rounded-sm" />
-            <span className="text-xs font-mono text-muted-foreground">CHOKHO © 2026</span>
+            <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Towards a Trash-Free Uttarakhand — CHOKHO</span>
           </div>
           <a href="https://github.com/ChokhoAI" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.2c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path><path d="M9 18c-4.51 2-5-2-7-2"></path></svg>

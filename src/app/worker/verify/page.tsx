@@ -61,7 +61,7 @@ export default function VerifyCleanup() {
             </SelectTrigger>
             <SelectContent>
               {assignedComplaints.map(c => (
-                <SelectItem key={c.id} value={c.id}>
+                <SelectItem key={c.id} value={String(c.id)}>
                   {c.id} — {c.category}, {c.location}
                 </SelectItem>
               ))}
@@ -74,9 +74,11 @@ export default function VerifyCleanup() {
       {selectedComplaint && (
         <Card className="border-border/50">
           <CardContent className="p-4 space-y-3">
-            <div className="flex items-center gap-1.5">
-              <ImageIcon className="h-3.5 w-3.5 text-muted-foreground" />
-              <Label className="text-xs">Before Photo (from complaint)</Label>
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5">
+                <ImageIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                <Label className="text-xs">Before Photo (from complaint)</Label>
+              </div>
             </div>
             {selectedComplaint.imageUrl ? (
               <img src={selectedComplaint.imageUrl} alt="Before" className="w-full h-40 object-cover rounded-lg" />

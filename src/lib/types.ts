@@ -10,23 +10,45 @@ export interface User {
 }
 
 export interface Complaint {
-  id: string;
+  id: string | number;
   status: "pending" | "in-progress" | "resolved" | "rejected";
-  priority: "low" | "medium" | "high" | "critical";
   severityScore: number;
-  cleaned: boolean;
   location: string;
-  coordinates: { lat: number; lng: number };
+  category: string;
   createdAt: string;
-  updatedAt: string;
-  citizenId: string;
-  citizenName: string;
+  updatedAt?: string;
+  coordinates: { lat: number; lng: number };
+  imageUrl?: string;
+  cleanedImageUrl?: string;
+  citizenId?: string;
+  citizenName?: string;
   assignedWorkerId?: string;
   assignedWorkerName?: string;
-  imageUrl?: string;
-  afterImageUrl?: string;
   aiAnalysis?: string;
-  category: string;
+  cleaned?: boolean;
+}
+
+export interface AdminComplaintData {
+  formattedId: string;
+  trashType: string; // From TrashType enum
+  location: string;
+  citizenName: string;
+  severityScore: number;
+  volumeEstimate: string; // From VolumeEstimate enum
+  complaintStatus: string; // From ComplaintStatus enum
+  workerName: string;
+  date: string;
+}
+
+export interface WorkerRouteComplaint {
+  id: number;
+  latitude: number;
+  longitude: number;
+  location: string;
+  imageUrl: string;
+  status: string; // From ComplaintStatus enum
+  sequenceNo: number;
+  severityScore: number;
 }
 
 export interface Worker {
@@ -64,12 +86,61 @@ export interface Route {
   endTime?: string;
 }
 
-export interface DashboardStats {
-  activeWorkers: number;
+export interface AdminDashboardData {
+  name: string;
   totalComplaints: number;
-  resolvedComplaints: number;
-  activeRoutes: number;
-  vehiclesActive: number;
+  totalWorkers: number;
+  totalCitizens: number;
+  totalPendingComplaints: number;
+  totalActiveVehicles: number;
   totalVehicles: number;
   efficiency: number;
 }
+
+export interface CitizenDashboardData {
+  complaintResolvedPercentage: number;
+  totalComplaints: number;
+  resolvedComplaints: number;
+  pendingComplaints: number;
+  name: string;
+}
+
+export interface WorkerDashboardData {
+  name: string;
+  empId: string;
+  vehicleNumber: string;
+  routeStatus: string;
+  totalRouteComplaints: number;
+  resolvedRouteComplaints: number;
+  clusterId: string;
+}
+
+export interface WorkerProfileData {
+  name: string;
+  empId: string;
+  phone: string;
+  totalCompletedRoutes: number;
+  totalVerifications: number;
+}
+
+export interface CitizenProfileData {
+  name: string;
+  username: string;
+  phone: string;
+  address: string;
+}
+
+export interface AdminWorkerResponse {
+  workerId: string;
+  workerName: string;
+  phoneNo: string;
+  vehicleNo: string;
+}
+
+export interface AdminVehicleResponse {
+  vehicleId: string;
+  vehicleNo: string;
+  vehicleStatus: "ACTIVE" | "MAINTENANCE" | "IDLE";
+  workerName: string;
+}
+

@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { dashboardStats, complaints, routes, chartData } from "@/lib/mock-data";
+import { adminDashboardData, complaints, routes, chartData } from "@/lib/mock-data";
 import { Users, AlertTriangle, TrendingUp, Truck, MapPin, Clock } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip, PieChart, Pie, Cell } from "recharts";
 
@@ -20,10 +20,10 @@ export default function AdminDashboard() {
       {/* Stats Grid */}
       <div className="grid grid-cols-4 gap-4">
         {[
-          { label: "Total Complaints", value: dashboardStats.totalComplaints.toString(), icon: AlertTriangle, color: "text-amber-500", sub: `${dashboardStats.resolvedComplaints} resolved` },
-          { label: "Workers On Shift", value: dashboardStats.activeWorkers.toString(), icon: Users, color: "text-emerald-500", sub: `of 186 total` },
-          { label: "Open Complaints", value: (dashboardStats.totalComplaints - dashboardStats.resolvedComplaints).toString(), icon: AlertTriangle, color: "text-red-500", sub: `pending action` },
-          { label: "Fleet Active", value: `${dashboardStats.vehiclesActive}/${dashboardStats.totalVehicles}`, icon: Truck, color: "text-blue-400", sub: `${dashboardStats.activeRoutes} routes` },
+          { label: "Total Complaints", value: adminDashboardData.totalComplaints.toString(), icon: AlertTriangle, color: "text-amber-500", sub: "reported" },
+          { label: "Workers", value: adminDashboardData.totalWorkers.toString(), icon: Users, color: "text-emerald-500", sub: "registered" },
+          { label: "Open Complaints", value: adminDashboardData.totalPendingComplaints.toString(), icon: AlertTriangle, color: "text-red-500", sub: `pending action` },
+          { label: "Fleet Active", value: `${adminDashboardData.totalActiveVehicles}/${adminDashboardData.totalVehicles}`, icon: Truck, color: "text-blue-400", sub: `vehicles deployed` },
         ].map((stat) => (
           <Card key={stat.label} className="border-border/50">
             <CardContent className="p-5">
@@ -43,53 +43,12 @@ export default function AdminDashboard() {
         <CardContent className="p-5">
           <div className="flex items-center justify-between mb-3">
             <div><p className="text-sm font-medium">System Efficiency</p><p className="text-xs text-muted-foreground">Based on resolution rate and response time</p></div>
-            <div className="flex items-center gap-2"><TrendingUp className="h-4 w-4 text-emerald-500" /><span className="text-2xl font-serif font-bold">{dashboardStats.efficiency}%</span></div>
+            <div className="flex items-center gap-2"><TrendingUp className="h-4 w-4 text-emerald-500" /><span className="text-2xl font-serif font-bold">{adminDashboardData.efficiency}%</span></div>
           </div>
-          <Progress value={dashboardStats.efficiency} className="h-2" />
+          <Progress value={adminDashboardData.efficiency} className="h-2" />
         </CardContent>
       </Card>
 
-      {/* Charts */}
-      <div className="grid grid-cols-2 gap-4">
-        <Card className="border-border/50">
-          <CardHeader className="pb-2"><CardTitle className="text-sm">Weekly Collection</CardTitle></CardHeader>
-          <CardContent>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData.weeklyCollection}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="day" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                  <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                  <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "6px", fontSize: 12 }} />
-                  <Bar dataKey="collected" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="target" fill="hsl(var(--muted))" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/50">
-          <CardHeader className="pb-2"><CardTitle className="text-sm">Complaints by Category</CardTitle></CardHeader>
-          <CardContent>
-            <div className="h-64 flex items-center">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={chartData.complaintsByCategory} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={3}>
-                    {chartData.complaintsByCategory.map((_, i) => (<Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />))}
-                  </Pie>
-                  <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "6px", fontSize: 12 }} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="flex flex-wrap gap-3 mt-2 justify-center">
-              {chartData.complaintsByCategory.map((c, i) => (
-                <div key={c.name} className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full" style={{ backgroundColor: PIE_COLORS[i] }} /><span className="text-[10px] text-muted-foreground">{c.name}</span></div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Active Routes & Recent Complaints */}
       <div className="grid grid-cols-2 gap-4">

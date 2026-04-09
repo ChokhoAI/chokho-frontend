@@ -27,30 +27,30 @@ export default function RoutesPage() {
       </div>
 
       {/* Route Cards */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {routes.map((r) => {
-          const routeComplaints = (r.stops || [])
-            .map(s => complaints.find(c => c.id === s.complaintId))
-            .filter((c): c is NonNullable<typeof c> => c !== undefined);
-          const resolvedStops = routeComplaints.filter(c => c.cleaned).length;
-          const progress = routeComplaints.length > 0 ? (resolvedStops / routeComplaints.length) * 100 : 0;
-
+          // In a real scenario, we would map these to clusters and their complaint IDs
+          // For now, we align the UI to show the Cluster ID and basic completion status
           return (
-            <Card key={r.id} className="border-border/50 hover:bg-muted/20 transition-colors cursor-pointer">
+            <Card key={r.id} className="border-border/50 hover:bg-muted/20 transition-colors cursor-pointer group">
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-3">
-                  <Badge variant={r.status === "active" ? "default" : r.status === "completed" ? "secondary" : "outline"} className="text-[10px]">{r.status}</Badge>
-                  <span className="text-[10px] font-mono text-muted-foreground">{r.id}</span>
+                  <Badge variant={r.status === "active" ? "default" : r.status === "completed" ? "secondary" : "outline"} className="text-[10px]">
+                    {r.status === "active" ? "OPTIMIZED" : r.status.toUpperCase()}
+                  </Badge>
+                  <span className="text-[10px] font-mono text-muted-foreground group-hover:text-primary transition-colors">{r.id}</span>
                 </div>
-                <h3 className="text-sm font-semibold">{r.name}</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">{r.ward}</p>
-                <Progress value={progress} className="h-1.5 mt-3 mb-2" />
-                <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-                  <span className="flex items-center gap-1"><AlertTriangle className="h-3 w-3" />{resolvedStops}/{routeComplaints.length} stops</span>
-                  <span className="flex items-center gap-1"><Navigation className="h-3 w-3" />{r.distance}</span>
-                  <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{r.estimatedTime}</span>
+                <h3 className="text-sm font-semibold mb-2">Automated Cluster Analysis</h3>
+                <div className="flex items-center justify-between text-[10px] text-muted-foreground mt-4">
+                  <span className="flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> {r.stops.length} Points of Interest</span>
+                  <span className="flex items-center gap-1"><Navigation className="h-3 w-3 text-emerald-500" /> AI Sequenced</span>
                 </div>
-                {r.assignedWorker && <p className="text-[10px] text-primary mt-2">{r.assignedWorker} • {r.assignedVehicle}</p>}
+                {r.assignedWorker && (
+                  <div className="mt-4 pt-4 border-t border-border/50">
+                    <p className="text-[10px] font-medium text-primary uppercase tracking-wider">Assigned Dispatch</p>
+                    <p className="text-xs mt-1">{r.assignedWorker} • {r.assignedVehicle}</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           );

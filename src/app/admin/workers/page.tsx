@@ -3,9 +3,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { workers } from "@/lib/mock-data";
-import { Search, Filter, Phone } from "lucide-react";
+import { adminWorkers } from "@/lib/mock-data";
+import { Phone, Truck, Plus } from "lucide-react";
+import Link from "next/link";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export default function WorkersManagement() {
@@ -13,40 +13,43 @@ export default function WorkersManagement() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div><h1 className="text-2xl font-serif font-bold">Worker Logs</h1><p className="text-sm text-muted-foreground mt-1">Monitor and manage field workers</p></div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="gap-1.5 cursor-pointer"><Filter className="h-3.5 w-3.5" /> Filter</Button>
-          <Button size="sm" className="cursor-pointer">Add Worker</Button>
-        </div>
+        <Link href="/admin/add?tab=worker">
+          <Button size="sm" className="gap-2 cursor-pointer">
+            <Plus className="h-4 w-4" /> Add Worker
+          </Button>
+        </Link>
       </div>
 
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input placeholder="Search workers..." className="pl-9 h-9 bg-muted/50" />
-      </div>
-
-      <div className="grid grid-cols-3 gap-4">
-        {workers.map((w) => (
-          <Card key={w.id} className="border-border/50 hover:bg-muted/20 transition-colors cursor-pointer">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {adminWorkers.map((w) => (
+          <Card key={w.workerId} className="border-border/50 hover:bg-muted/20 transition-colors cursor-pointer">
             <CardContent className="p-5">
               <div className="flex items-start gap-3">
-                <Avatar className="h-10 w-10"><AvatarFallback className="bg-primary/20 text-primary text-sm font-semibold">{w.name.split(" ").map(n => n[0]).join("")}</AvatarFallback></Avatar>
+                <Avatar className="h-10 w-10"><AvatarFallback className="bg-primary/20 text-primary text-sm font-semibold">{w.workerName.split(" ").map((n: string) => n[0]).join("")}</AvatarFallback></Avatar>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium truncate">{w.name}</p>
-                    <Badge variant={w.status === "on-shift" ? "default" : w.status === "off-duty" ? "secondary" : "outline"} className="text-[9px] shrink-0">{w.status}</Badge>
+                    <p className="text-sm font-medium truncate">{w.workerName}</p>
+                    <Badge variant="outline" className="text-[9px] shrink-0">Active</Badge>
                   </div>
-                  <p className="text-[10px] font-mono text-muted-foreground">{w.employeeId}</p>
+                  <p className="text-[10px] font-mono text-muted-foreground">{w.workerId}</p>
                 </div>
               </div>
-              <div className="mt-3 space-y-1.5">
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><Phone className="h-3 w-3" />{w.phone}</div>
-                {w.shiftStart && w.shiftEnd && (
-                  <div className="text-xs text-muted-foreground">Shift: {w.shiftStart} – {w.shiftEnd}</div>
-                )}
+              <div className="mt-4 space-y-3">
+                <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
+                  <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center shrink-0">
+                    <Phone className="h-3.5 w-3.5" />
+                  </div>
+                  <span className="font-mono text-xs">{w.phoneNo}</span>
+                </div>
+                <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
+                  <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center shrink-0">
+                    <Truck className="h-3.5 w-3.5" />
+                  </div>
+                  <span className="font-medium text-xs truncate">Assigned: {w.vehicleNo}</span>
+                </div>
               </div>
-              <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
-                {w.assignedRoute && <Badge variant="outline" className="text-[9px]">{w.assignedRoute}</Badge>}
-                {!w.assignedRoute && <span className="text-[10px] text-muted-foreground">No route assigned</span>}
+              <div className="flex items-center justify-end mt-4 pt-4 border-t border-border/50">
+                <Button variant="ghost" size="sm" className="h-8 text-[10px] uppercase tracking-wider font-bold">View History</Button>
               </div>
             </CardContent>
           </Card>

@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { dashboardStats, complaints, getSeverityBorder } from "@/lib/mock-data";
+import { citizenDashboardData, complaints, getSeverityBorder } from "@/lib/mock-data";
 import { AlertTriangle, CheckCircle2, MapPin, Plus, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
@@ -15,8 +15,7 @@ export default function CitizenDashboard() {
     <div className="px-4 py-4 space-y-5">
       {/* Greeting */}
       <div>
-        <h1 className="text-xl font-serif font-semibold">Good Morning, Rahul</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">Dehradun Area</p>
+        <h1 className="text-xl font-serif font-semibold">Hello, {citizenDashboardData.name}</h1>
       </div>
 
       {/* Area Cleanliness Score */}
@@ -25,13 +24,13 @@ export default function CitizenDashboard() {
           <div className="flex items-center justify-between mb-3">
             <div>
               <p className="text-xs text-muted-foreground font-mono uppercase tracking-wider">Area Cleanliness</p>
-              <p className="text-3xl font-serif font-bold mt-1">{dashboardStats.efficiency}%</p>
+              <p className="text-3xl font-serif font-bold mt-1">{citizenDashboardData.complaintResolvedPercentage}%</p>
             </div>
             <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center">
               <TrendingUp className="h-6 w-6 text-primary" />
             </div>
           </div>
-          <Progress value={dashboardStats.efficiency} className="h-2" />
+          <Progress value={citizenDashboardData.complaintResolvedPercentage} className="h-2" />
           <p className="text-[10px] text-muted-foreground mt-2 font-mono">↑ 2.3% from last week</p>
         </CardContent>
       </Card>
@@ -41,21 +40,21 @@ export default function CitizenDashboard() {
         <Card className="border-border/50">
           <CardContent className="p-3 text-center">
             <AlertTriangle className="h-4 w-4 text-amber-500 mx-auto mb-1.5" />
-            <p className="text-lg font-serif font-bold">{dashboardStats.totalComplaints}</p>
+            <p className="text-lg font-serif font-bold">{citizenDashboardData.totalComplaints}</p>
             <p className="text-[10px] text-muted-foreground">Complaints</p>
           </CardContent>
         </Card>
         <Card className="border-border/50">
           <CardContent className="p-3 text-center">
             <CheckCircle2 className="h-4 w-4 text-emerald-500 mx-auto mb-1.5" />
-            <p className="text-lg font-serif font-bold">{dashboardStats.resolvedComplaints}</p>
+            <p className="text-lg font-serif font-bold">{citizenDashboardData.resolvedComplaints}</p>
             <p className="text-[10px] text-muted-foreground">Resolved</p>
           </CardContent>
         </Card>
         <Card className="border-border/50">
           <CardContent className="p-3 text-center">
             <AlertTriangle className="h-4 w-4 text-destructive mx-auto mb-1.5" />
-            <p className="text-lg font-serif font-bold">{dashboardStats.totalComplaints - dashboardStats.resolvedComplaints}</p>
+            <p className="text-lg font-serif font-bold">{citizenDashboardData.pendingComplaints}</p>
             <p className="text-[10px] text-muted-foreground">Pending</p>
           </CardContent>
         </Card>

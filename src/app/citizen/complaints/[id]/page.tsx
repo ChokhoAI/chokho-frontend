@@ -53,7 +53,6 @@ export default function ComplaintDetail({ params }: { params: Promise<{ id: stri
           <Separator className="my-3" />
           <div className="flex items-center gap-3">
             <Badge variant="outline" className="text-[10px]">{complaint.category}</Badge>
-            <Badge variant="outline" className="text-[10px]">{complaint.priority} priority</Badge>
             {complaint.cleaned && <Badge variant="outline" className="text-[10px] text-emerald-500 border-emerald-500/30">Cleaned</Badge>}
           </div>
         </CardContent>
@@ -65,17 +64,17 @@ export default function ComplaintDetail({ params }: { params: Promise<{ id: stri
           <CardContent className="p-4">
             <p className="text-xs font-semibold mb-3 uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
               <ImageIcon className="h-3 w-3" />
-              {complaint.afterImageUrl ? "Before & After" : "Evidence Photo"}
+              {complaint.cleanedImageUrl ? "Before & After" : "Evidence Photo"}
             </p>
-            <div className={`grid ${complaint.afterImageUrl ? "grid-cols-2 gap-3" : "grid-cols-1"}`}>
+            <div className={`grid ${complaint.cleanedImageUrl ? "grid-cols-2 gap-3" : "grid-cols-1"}`}>
               <div>
-                {complaint.afterImageUrl && <p className="text-[10px] text-muted-foreground mb-1.5">Before</p>}
+                {complaint.cleanedImageUrl && <p className="text-[10px] text-muted-foreground mb-1.5">Before</p>}
                 <img src={complaint.imageUrl} alt="Before" className="w-full h-40 object-cover rounded-lg" />
               </div>
-              {complaint.afterImageUrl && (
+              {complaint.cleanedImageUrl && (
                 <div>
                   <p className="text-[10px] text-muted-foreground mb-1.5">After</p>
-                  <img src={complaint.afterImageUrl} alt="After" className="w-full h-40 object-cover rounded-lg" />
+                  <img src={complaint.cleanedImageUrl} alt="After" className="w-full h-40 object-cover rounded-lg" />
                 </div>
               )}
             </div>

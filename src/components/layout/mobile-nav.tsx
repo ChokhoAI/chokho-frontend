@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ClipboardList, PlusCircle, User, Moon, Sun } from "lucide-react";
+import { Home, ClipboardList, PlusCircle, User, Moon, Sun, Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { useTheme } from "next-themes";
@@ -52,6 +52,9 @@ export function MobileNav({ role }: { role: "citizen" | "worker" }) {
               <Moon className="h-4 w-4 text-muted-foreground" />
             )}
           </button>
+          <Link href="/heatmap" className="p-2 rounded-full hover:bg-muted transition-colors flex items-center justify-center">
+            <Flame className="h-4 w-4 text-orange-500" />
+          </Link>
         </div>
       </header>
       {/* Bottom Navigation */}
