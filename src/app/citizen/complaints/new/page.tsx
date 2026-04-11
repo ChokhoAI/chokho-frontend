@@ -1,39 +1,74 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Camera, MapPin, Bot, Loader2 } from "lucide-react";
+import { citizenApi } from "@/lib/api";
+import { ArrowLeft, Camera, Bot, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function NewComplaint() {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [aiAnalyzing, setAiAnalyzing] = useState(false);
   const [aiResult, setAiResult] = useState<{ category: string; severity: number; confidence: number } | null>(null);
+  const { toast } = useToast();
 
-  const handleImageUpload = () => {
-    // Simulate image capture
-    setImagePreview("https://images.unsplash.com/photo-1605600659908-0ef719419d41?q=80&w=600&auto=format&fit=crop");
-    
-    // Trigger AI analysis
-    setAiAnalyzing(true);
-    setTimeout(() => {
-      setAiResult({
-        category: "Overflow",
-        severity: 8,
-        confidence: 94,
-      });
-      setAiAnalyzing(false);
-    }, 2000);
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+      
+      // Trigger AI analysis simulation
+      setAiAnalyzing(true);
+      setTimeout(() => {
+        setAiResult({
+          category: "Waste Overflow",
+          severity: Math.floor(Math.random() * 5) + 5, // 5-10
+          confidence: 90 + Math.floor(Math.random() * 9),
+        });
+        setAiAnalyzing(false);
+      }, 2000);
+    }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    if (!imageFile || !aiResult) return;
+
     setLoading(true);
-    setTimeout(() => router.push("/citizen/complaints"), 1000);
+    try {
+      const formData = new FormData();
+      formData.append("image", imageFile);
+      // Depending on backend expectations, we might need other fields.
+      // Assuming backend extracts location from metadata or it's hardcoded for now as per controller:
+      // Complaint registered successfully with latitude: 27.7172 and longitude: 85.324
+      
+      await citizenApi.reportComplaint(formData);
+      toast({
+        title: "Report Submitted",
+        description: "Thank you for your contribution. Chokho AI is processing your report.",
+      });
+      router.push("/citizen/complaints");
+    } catch (error) {
+      toast({
+        title: "Submission Failed",
+        description: "Check your connection and try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const severityColor = (s: number) => s >= 8 ? "text-red-500" : s >= 5 ? "text-orange-500" : "text-amber-400";
@@ -48,13 +83,22 @@ export default function NewComplaint() {
         <h1 className="text-lg font-serif font-semibold">Report Complaint</h1>
       </div>
 
+      <input 
+        type="file" 
+        accept="image/*" 
+        capture="environment"
+        ref={fileInputRef}
+        onChange={handleImageSelect}
+        className="hidden"
+      />
+
       {/* Image Upload — Primary Action */}
       <Card className="border-border/50">
         <CardContent className="p-4 space-y-3">
           <p className="text-xs font-medium">Capture the Issue</p>
           {!imagePreview ? (
             <div 
-              onClick={handleImageUpload}
+              onClick={() => fileInputRef.current?.click()}
               className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all"
             >
               <Camera className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
@@ -65,8 +109,9 @@ export default function NewComplaint() {
             <div className="relative rounded-lg overflow-hidden">
               <img src={imagePreview} alt="Captured" className="w-full h-48 object-cover rounded-lg" />
               <button 
-                onClick={() => { setImagePreview(null); setAiResult(null); }}
+                onClick={() => { setImagePreview(null); setImageFile(null); setAiResult(null); }}
                 className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm rounded-full p-1.5 text-xs hover:bg-background transition-colors"
+                disabled={loading}
               >
                 ✕
               </button>
@@ -88,7 +133,7 @@ export default function NewComplaint() {
               <div className="h-2 bg-primary/20 rounded-full overflow-hidden">
                 <div className="h-full bg-primary rounded-full animate-pulse" style={{ width: "70%" }} />
               </div>
-              <p className="text-[10px] text-muted-foreground">Processing with Chokho Vision AI...</p>
+              <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-tighter">AI Processing...</p>
             </div>
           </CardContent>
         </Card>
@@ -99,8 +144,8 @@ export default function NewComplaint() {
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-3">
               <Bot className="h-4 w-4 text-primary" />
-              <span className="text-xs font-medium text-primary">AI Analysis Complete</span>
-              <Badge variant="outline" className="text-[9px] ml-auto">{aiResult.confidence}% Confidence</Badge>
+              <span className="text-xs font-medium text-primary uppercase tracking-widest font-mono">AI Analysis Complete</span>
+              <Badge variant="outline" className="text-[9px] ml-auto">{aiResult.confidence}% Conf</Badge>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -108,7 +153,7 @@ export default function NewComplaint() {
                 <p className="text-sm font-medium">{aiResult.category}</p>
               </div>
               <div>
-                <p className="text-[10px] text-muted-foreground">Severity Score</p>
+                <p className="text-[10px] text-muted-foreground">Severity</p>
                 <p className={`text-sm font-bold font-mono ${severityColor(aiResult.severity)}`}>{aiResult.severity}/10</p>
               </div>
             </div>
@@ -120,9 +165,10 @@ export default function NewComplaint() {
       <Button 
         className="w-full h-11 font-medium cursor-pointer" 
         onClick={handleSubmit} 
-        disabled={loading || !imagePreview || !aiResult}
+        disabled={loading || !imageFile || !aiResult}
       >
-        {loading ? "Submitting..." : "Submit Complaint"}
+        {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+        {loading ? "Submitting..." : "Submit Report"}
       </Button>
     </div>
   );

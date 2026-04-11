@@ -21,9 +21,11 @@ export const metadata: Metadata = {
   title: "Chokho AI",
   description:
     "AI-powered civic waste management for Dehradun, Haridwar & Rishikesh",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
 };
 
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/toaster";
 
 export default function RootLayout({
   children,
@@ -39,6 +41,7 @@ export default function RootLayout({
       <body className="min-h-screen antialiased">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           {children}
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

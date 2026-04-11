@@ -9,10 +9,12 @@ export const adminDashboardData: AdminDashboardData = {
   totalActiveVehicles: 34,
   totalVehicles: 42,
   efficiency: 92,
+  activeRoutes: [],
+  recentComplaints: []
 };
 
 export const citizenDashboardData: CitizenDashboardData = {
-  complaintResolvedPercentage: 92,
+  resolvedPercentage: 92,
   totalComplaints: 12,
   resolvedComplaints: 10,
   pendingComplaints: 2,
@@ -22,11 +24,13 @@ export const citizenDashboardData: CitizenDashboardData = {
 export const workerDashboardData: WorkerDashboardData = {
   name: "Ramesh Negi",
   empId: "EMP-4521",
-  vehicleNumber: "UK07 AB 1234",
+  vehicleNo: "UK07 AB 1234",
   routeStatus: "Active",
-  totalRouteComplaints: 8,
-  resolvedRouteComplaints: 3,
-  clusterId: "CLUSTER-WRD12-01"
+  totalComplaints: 8,
+  completedComplaints: 3,
+  pendingComplaints: 5,
+  complaints: [],
+  routeId: "RT-007"
 };
 
 export const workerProfileData: WorkerProfileData = {
@@ -41,99 +45,105 @@ export const citizenProfileData: CitizenProfileData = {
   name: "Rahul Sharma",
   username: "rahul_s",
   phone: "+91 98765 43210",
-  address: "42, Clock Tower Road, Ward 12, Dehradun"
+  createdAt: "2026-01-01T10:00:00Z"
 };
 
 export const complaints: Complaint[] = [
   { 
     id: "CMP-2847", 
-    status: "in-progress", 
+    complaintStatus: "IN_PROGRESS", 
     severityScore: 8,
     cleaned: false,
     location: "Clock Tower, Dehradun", 
-    coordinates: { lat: 30.3255, lng: 78.0421 }, 
+    latitude: 30.3255, 
+    longitude: 78.0421, 
     createdAt: "2026-04-06T08:30:00Z", 
     updatedAt: "2026-04-06T14:20:00Z", 
     citizenId: "CIT-001", 
     citizenName: "Rahul Sharma", 
     assignedWorkerId: "WRK-012", 
     assignedWorkerName: "Ramesh Negi", 
-    category: "Overflow",
+    trashType: "OVERFLOW",
     imageUrl: "https://images.unsplash.com/photo-1605600659908-0ef719419d41?q=80&w=600&auto=format&fit=crop",
     cleanedImageUrl: "https://images.unsplash.com/photo-1516245834210-c4c142787335?w=800&q=80",
     aiAnalysis: "AI Confidence: 94% — Severe waste accumulation spanning 2x2 meters. Organic decay detected." 
   },
   { 
     id: "CMP-2846", 
-    status: "pending", 
+    complaintStatus: "PENDING", 
     severityScore: 10,
     cleaned: false, 
     location: "Rajpur Road, Dehradun", 
-    coordinates: { lat: 30.3442, lng: 78.0489 }, 
+    latitude: 30.3442, 
+    longitude: 78.0489, 
     createdAt: "2026-04-06T06:15:00Z", 
     updatedAt: "2026-04-06T06:15:00Z", 
     citizenId: "CIT-002", 
     citizenName: "Priya Rawat", 
-    category: "Illegal Dumping",
+    trashType: "ILLEGAL_DUMPING",
     imageUrl: "https://images.unsplash.com/photo-1595278069441-2cf29f8005a4?q=80&w=600&auto=format&fit=crop",
   },
   { 
     id: "CMP-2845", 
-    status: "resolved", 
+    complaintStatus: "RESOLVED", 
     severityScore: 4,
     cleaned: true,
     location: "Sector 5, Haridwar", 
-    coordinates: { lat: 29.9457, lng: 78.1642 }, 
+    latitude: 29.9457, 
+    longitude: 78.1642, 
     createdAt: "2026-04-05T07:00:00Z", 
     updatedAt: "2026-04-05T16:30:00Z", 
     citizenId: "CIT-003", 
     citizenName: "Amit Bisht", 
     assignedWorkerId: "WRK-008", 
     assignedWorkerName: "Suresh Panwar", 
-    category: "Missed Collection",
+    trashType: "MISSED_COLLECTION",
     imageUrl: "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?q=80&w=600&auto=format&fit=crop",
     cleanedImageUrl: "https://images.unsplash.com/photo-1621255869389-9b97b0aae90f?q=80&w=600&auto=format&fit=crop"
   },
   { 
     id: "CMP-2844", 
-    status: "pending", 
+    complaintStatus: "PENDING", 
     severityScore: 2,
     cleaned: false,
     location: "Har-ki-Pauri, Haridwar", 
-    coordinates: { lat: 29.9544, lng: 78.1688 }, 
+    latitude: 29.9544, 
+    longitude: 78.1688, 
     createdAt: "2026-04-05T11:00:00Z", 
     updatedAt: "2026-04-05T11:00:00Z", 
     citizenId: "CIT-004", 
     citizenName: "Suman Dobhal", 
-    category: "Scattered Waste" 
+    trashType: "SCATTERED_WASTE" 
   },
   { 
     id: "CMP-2843", 
-    status: "in-progress", 
+    complaintStatus: "IN_PROGRESS", 
     severityScore: 7,
     cleaned: false,
     location: "MG Road, Rishikesh", 
-    coordinates: { lat: 30.0869, lng: 78.2676 }, 
+    latitude: 30.0869, 
+    longitude: 78.2676, 
     createdAt: "2026-04-04T09:45:00Z", 
     updatedAt: "2026-04-05T10:00:00Z", 
     citizenId: "CIT-005", 
     citizenName: "Deepak Joshi", 
     assignedWorkerId: "WRK-015", 
     assignedWorkerName: "Vikram Singh", 
-    category: "Odor/Sanitation" 
+    trashType: "ODOR" 
   },
   { 
     id: "CMP-2842", 
-    status: "resolved", 
+    complaintStatus: "RESOLVED", 
     severityScore: 5,
     cleaned: true,
     location: "Vasant Vihar, Dehradun", 
-    coordinates: { lat: 30.3165, lng: 78.0322 }, 
+    latitude: 30.3165, 
+    longitude: 78.0322, 
     createdAt: "2026-04-04T14:20:00Z", 
     updatedAt: "2026-04-05T08:00:00Z", 
     citizenId: "CIT-006", 
     citizenName: "Kavita Rana", 
-    category: "Animal Interference" 
+    trashType: "ANIMAL_INTERFERENCE" 
   },
 ];
 
@@ -147,18 +157,18 @@ export const workers: Worker[] = [
 ];
 
 export const vehicles: Vehicle[] = [
-  { id: "VH-001", registrationNumber: "UK07 AB 1234", type: "truck", status: "active", assignedDriver: "Ramesh Negi", assignedRoute: "RT-007" },
-  { id: "VH-002", registrationNumber: "UK07 CD 5678", type: "mini-truck", status: "active", assignedDriver: "Suresh Panwar", assignedRoute: "RT-003" },
-  { id: "VH-003", registrationNumber: "UK07 EF 9012", type: "truck", status: "maintenance" },
-  { id: "VH-004", registrationNumber: "UK14 GH 3456", type: "auto", status: "active", assignedDriver: "Pradeep Kumar", assignedRoute: "RT-011" },
-  { id: "VH-005", registrationNumber: "UK14 IJ 7890", type: "mini-truck", status: "idle" },
-  { id: "VH-006", registrationNumber: "UK07 KL 2345", type: "truck", status: "active", assignedDriver: "Ajay Bisht", assignedRoute: "RT-005" },
+  { id: "VH-001", vehicleNo: "UK07 AB 1234", vehicleId: "V1", type: "truck", vehicleStatus: "ACTIVE", assignedDriver: "Ramesh Negi", workerName: "Ramesh Negi" },
+  { id: "VH-002", vehicleNo: "UK07 CD 5678", vehicleId: "V2", type: "mini-truck", vehicleStatus: "ACTIVE", assignedDriver: "Suresh Panwar", workerName: "Suresh Panwar" },
+  { id: "VH-003", vehicleNo: "UK07 EF 9012", vehicleId: "V3", type: "truck", vehicleStatus: "MAINTENANCE" },
+  { id: "VH-004", vehicleNo: "UK14 GH 3456", vehicleId: "V4", type: "auto", vehicleStatus: "ACTIVE", assignedDriver: "Pradeep Kumar", workerName: "Pradeep Kumar" },
+  { id: "VH-005", vehicleNo: "UK14 IJ 7890", vehicleId: "V5", type: "mini-truck", vehicleStatus: "IDLE" },
+  { id: "VH-006", vehicleNo: "UK07 KL 2345", vehicleId: "V6", type: "truck", vehicleStatus: "ACTIVE", assignedDriver: "Ajay Bisht", workerName: "Ajay Bisht" },
 ];
 
 export const routes: Route[] = [
   { 
     id: "RT-007", 
-    status: "active", 
+    status: "ACTIVE", 
     assignedWorker: "Ramesh Negi", 
     assignedVehicle: "UK07 AB 1234", 
     stops: [
@@ -174,7 +184,7 @@ export const routes: Route[] = [
   },
   { 
     id: "RT-003", 
-    status: "active", 
+    status: "ACTIVE", 
     assignedWorker: "Suresh Panwar", 
     assignedVehicle: "UK07 CD 5678", 
     stops: [
@@ -185,45 +195,6 @@ export const routes: Route[] = [
     startTime: "06:30",
     name: "South Sector R2",
     ward: "Ward 15"
-  },
-  { 
-    id: "RT-011", 
-    status: "active", 
-    assignedWorker: "Pradeep Kumar", 
-    assignedVehicle: "UK14 GH 3456", 
-    stops: [
-      { sequenceNo: 1, complaintId: "CMP-2844" }
-    ], 
-    distance: "6.2 km", 
-    estimatedTime: "1h 45m", 
-    startTime: "06:00",
-    name: "Haridwar Central",
-    ward: "Ward 15"
-  },
-  { 
-    id: "RT-005", 
-    status: "active", 
-    assignedWorker: "Ajay Bisht", 
-    assignedVehicle: "UK07 KL 2345", 
-    stops: [
-      { sequenceNo: 1, complaintId: "CMP-2842" }
-    ], 
-    distance: "9.8 km", 
-    estimatedTime: "2h 30m", 
-    startTime: "06:45",
-    name: "Paltan Bazaar Loop",
-    ward: "Ward 10"
-  },
-  { 
-    id: "RT-009", 
-    status: "pending", 
-    stops: [
-      { sequenceNo: 1, complaintId: "CMP-2843" }
-    ], 
-    distance: "7.1 km", 
-    estimatedTime: "2h 00m",
-    name: "Rishikesh Ghat Route",
-    ward: "Ward 3"
   },
 ];
 
@@ -278,33 +249,39 @@ export function getSeverityBorder(score: number): string {
 export const workerRouteComplaints: WorkerRouteComplaint[] = [
   {
     id: 1,
+    complaintId: "CMP-2847",
     latitude: 30.3255,
     longitude: 78.0421,
-    location: "Clock Tower, Dehradun",
+    locationName: "Clock Tower, Dehradun",
     imageUrl: "https://images.unsplash.com/photo-1605600659908-0ef719419d41?q=80&w=600&auto=format&fit=crop",
-    status: "IN_PROGRESS",
+    complaintStatus: "IN_PROGRESS",
     sequenceNo: 1,
-    severityScore: 8
+    severityScore: 8,
+    wasteType: "OVERFLOW"
   },
   {
     id: 2,
+    complaintId: "CMP-2846",
     latitude: 30.3442,
     longitude: 78.0489,
-    location: "Rajpur Road, Dehradun",
+    locationName: "Rajpur Road, Dehradun",
     imageUrl: "https://images.unsplash.com/photo-1595278069441-2cf29f8005a4?q=80&w=600&auto=format&fit=crop",
-    status: "PENDING",
+    complaintStatus: "PENDING",
     sequenceNo: 2,
-    severityScore: 10
+    severityScore: 10,
+    wasteType: "ILLEGAL_DUMPING"
   },
   {
     id: 3,
+    complaintId: "CMP-2845",
     latitude: 30.3165,
     longitude: 78.0322,
-    location: "Vasant Vihar, Dehradun",
+    locationName: "Vasant Vihar, Dehradun",
     imageUrl: "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?q=80&w=600&auto=format&fit=crop",
-    status: "PENDING",
+    complaintStatus: "PENDING",
     sequenceNo: 3,
-    severityScore: 5
+    severityScore: 5,
+    wasteType: "MISSED_COLLECTION"
   }
 ];
 
@@ -317,12 +294,12 @@ export function searchComplaints(query: string) {
 
 export const adminComplaints: AdminComplaintData[] = complaints.map(c => ({
   formattedId: String(c.id),
-  trashType: c.category.toUpperCase().replace(' ', '_'),
+  trashType: c.trashType.replace(' ', '_'),
   location: c.location,
   citizenName: c.citizenName || "Unknown",
   severityScore: c.severityScore,
   volumeEstimate: "MEDIUM",
-  complaintStatus: c.status.toUpperCase(),
+  complaintStatus: c.complaintStatus,
   workerName: c.assignedWorkerName || "Unassigned",
   date: c.createdAt
 }));
@@ -331,13 +308,13 @@ export const adminWorkers: AdminWorkerResponse[] = workers.map(w => ({
   workerId: w.id,
   workerName: w.name,
   phoneNo: w.phone,
-  vehicleNo: w.assignedRoute ? "UK07 AB 1234" : "N/A" // Simplified mapping
+  vehicleNo: w.assignedRoute ? "UK07 AB 1234" : "N/A"
 }));
 
 export const adminVehicles: AdminVehicleResponse[] = vehicles.map(v => ({
   vehicleId: v.id,
-  vehicleNo: v.registrationNumber,
-  vehicleStatus: v.status.toUpperCase() as any,
+  vehicleNo: v.vehicleNo,
+  vehicleStatus: v.vehicleStatus,
   workerName: v.assignedDriver || "Unassigned"
 }));
 

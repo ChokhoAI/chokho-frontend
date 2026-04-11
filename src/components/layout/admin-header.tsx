@@ -1,24 +1,52 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Bell, Search, Menu, LayoutDashboard, Map, MessageSquareWarning, Users, Truck, LogOut, Flame } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import { adminApi } from "@/lib/api";
+import { useToast } from "@/components/ui/use-toast";
 
 const sidebarLinks = [
-  { href: "/admin/dashboard", icon: LayoutDashboard, label: "Command Center" },
-  { href: "/admin/routes", icon: Map, label: "Route Optimization" },
+  { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard Overview" },
+  { href: "/admin/routes", icon: Map, label: "Collection Routes" },
   { href: "/admin/complaints", icon: MessageSquareWarning, label: "Citizen Reports" },
-  { href: "/admin/workers", icon: Users, label: "Worker Logs" },
-  { href: "/admin/vehicles", icon: Truck, label: "Vehicles" },
+  { href: "/admin/workers", icon: Users, label: "Field Workers" },
+  { href: "/admin/vehicles", icon: Truck, label: "Vehicle Fleet" },
 ];
 
 export function AdminHeader() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { toast } = useToast();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      try {
+        setUser(JSON.parse(userData));
+      } catch (e) {
+        console.error("Failed to parse user data");
+      }
+    }
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await adminApi.logout();
+    } catch (e) {}
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    toast({
+      title: "Signed Out",
+      description: "Admin session ended securely.",
+    });
+    router.push("/login");
+  };
 
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 md:px-6 bg-background/80 backdrop-blur-xl border-b border-border">
@@ -30,10 +58,10 @@ export function AdminHeader() {
                 <Menu className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56 mt-2">
+            <DropdownMenuContent align="start" className="w-56 mt-2 rounded-xl">
               <div className="px-2 py-1.5 mb-1">
                 <p className="text-sm font-semibold font-serif">CHOKHO</p>
-                <p className="text-[10px] text-muted-foreground font-mono">ADMIN PORTAL</p>
+                <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest">Admin Portal</p>
               </div>
               <DropdownMenuSeparator />
               {sidebarLinks.map((link) => {
@@ -51,7 +79,10 @@ export function AdminHeader() {
                 );
               })}
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive cursor-pointer focus:text-destructive flex items-center gap-2">
+              <DropdownMenuItem 
+                onClick={handleLogout}
+                className="text-destructive cursor-pointer focus:text-destructive flex items-center gap-2"
+              >
                 <LogOut className="h-4 w-4" />
                 <span>Logout</span>
               </DropdownMenuItem>
@@ -60,23 +91,13 @@ export function AdminHeader() {
         </div>
       </div>
 
-      <div className="flex items-center gap-3 md:gap-4">
+      <div className="flex items-center gap-1.5 sm:gap-4 transition-all duration-300">
         <Link 
           href="/heatmap" 
-          className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 hover:bg-primary/15 transition-colors group cursor-pointer"
+          className="p-2 transition-all group cursor-pointer flex items-center justify-center rounded-full hover:bg-muted"
         >
-          <Flame className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
-          <span className="text-[10px] font-mono text-primary font-bold uppercase tracking-widest hidden sm:inline">Live Heatmap</span>
+          <Flame className="h-4.5 w-4.5 text-orange-500 group-hover:scale-110 transition-transform" />
         </Link>
-        <div className="flex items-center gap-3 pl-3 border-l border-border">
-          <div className="text-right hidden sm:block">
-            <p className="text-sm font-medium">Admin Rawat</p>
-            <p className="text-[10px] text-muted-foreground font-mono">SUPERINTENDENT</p>
-          </div>
-          <Avatar className="h-8 w-8">
-            <AvatarFallback className="bg-primary/20 text-primary text-xs font-semibold">AR</AvatarFallback>
-          </Avatar>
-        </div>
       </div>
     </header>
   );

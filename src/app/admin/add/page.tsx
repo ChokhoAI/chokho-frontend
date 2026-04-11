@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, UserPlus, Truck, CheckCircle2, Loader2 } from "lucide-react";
+import { ArrowLeft, UserPlus, Truck, CheckCircle2, Loader2, AlertTriangle, Key, Phone, User as UserIcon } from "lucide-react";
+import { adminApi } from "@/lib/api";
 import Link from "next/link";
 
 function AddResourceForm() {
@@ -19,23 +20,54 @@ function AddResourceForm() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [activeTab, setActiveTab] = useState(initialTab);
+  const [error, setError] = useState("");
+  const [workers, setWorkers] = useState<any[]>([]);
 
-  const handleWorkerSubmit = (e: React.FormEvent) => {
+  // Form States
+  const [workerForm, setWorkerForm] = useState({ name: "", phone: "", password: "" });
+  const [vehicleForm, setVehicleForm] = useState({ vehicleNo: "", vehicleStatus: "ACTIVE", workerId: "" });
+
+  useEffect(() => {
+    const loadWorkers = async () => {
+      try {
+        const data = await adminApi.getWorkers();
+        setWorkers(data);
+      } catch (err) {
+        console.error("Failed to load workers for assignment", err);
+      }
+    };
+    loadWorkers();
+  }, []);
+
+  const handleWorkerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    setError("");
+    try {
+      await adminApi.registerWorker(workerForm);
       setSuccess(true);
-    }, 1500);
+    } catch (err: any) {
+      setError(err.message || "Failed to register field officer");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleVehicleSubmit = (e: React.FormEvent) => {
+  const handleVehicleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    setError("");
+    try {
+      await adminApi.registerVehicle({
+        ...vehicleForm,
+        workerId: Number(vehicleForm.workerId)
+      });
       setSuccess(true);
-    }, 1500);
+    } catch (err: any) {
+      setError(err.message || "Failed to onboard vehicle asset");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (success) {
@@ -45,9 +77,9 @@ function AddResourceForm() {
           <CheckCircle2 className="h-10 w-10 text-emerald-500" />
         </div>
         <div className="space-y-2">
-          <h2 className="text-2xl font-serif font-bold">Resource Registered</h2>
+          <h2 className="text-2xl font-serif font-bold">Successfully Added</h2>
           <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-            The {activeTab} has been successfully added to the Chokho ecosystem and is now ready for assignment.
+            The {activeTab} has been successfully added to the system and is now ready for use.
           </p>
         </div>
         <div className="flex gap-3 pt-4">
@@ -65,8 +97,8 @@ function AddResourceForm() {
           <ArrowLeft className="h-4 w-4" />
         </Link>
         <div>
-          <h1 className="text-xl font-serif font-semibold">Add New Resource</h1>
-          <p className="text-xs text-muted-foreground">Onboard new personnel or fleet assets</p>
+          <h1 className="text-xl font-serif font-semibold">Add New {activeTab === "worker" ? "Worker" : "Vehicle"}</h1>
+          <p className="text-xs text-muted-foreground">Fill in the details below to register a new {activeTab}.</p>
         </div>
       </div>
 
@@ -81,32 +113,67 @@ function AddResourceForm() {
         </TabsList>
 
         <TabsContent value="worker" className="mt-6">
-          <Card className="border-border/50 bg-white/40 dark:bg-card/80 backdrop-blur-sm">
+          <Card className="border-border/60 bg-card shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg">Worker Registration</CardTitle>
-              <CardDescription>Enter field officer credentials to grant system access.</CardDescription>
+              <CardDescription>Enter the basic information for the new field worker.</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleWorkerSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                {error && activeTab === "worker" && (
+                  <div className="p-3 rounded-md bg-destructive/10 border border-destructive/20 text-destructive text-xs font-medium flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4" /> {error}
+                  </div>
+                )}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="worker-name" className="text-xs uppercase tracking-wider opacity-70">Full Name</Label>
-                    <Input id="worker-name" placeholder="Rahul Sharma" required className="bg-muted/30" />
+                    <Label htmlFor="worker-name" className="text-xs font-bold text-muted-foreground">Full Name</Label>
+                    <div className="relative">
+                      <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        id="worker-name" 
+                        placeholder="e.g. Rahul Sharma" 
+                        required 
+                        className="pl-10 h-11"
+                        value={workerForm.name}
+                        onChange={(e) => setWorkerForm({ ...workerForm, name: e.target.value })}
+                      />
+                    </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="worker-id" className="text-xs uppercase tracking-wider opacity-70">Employee ID</Label>
-                    <Input id="worker-id" placeholder="EMP-4022" required className="bg-muted/30 font-mono" />
+                    <Label htmlFor="worker-phone" className="text-xs font-bold text-muted-foreground">Phone Number</Label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        id="worker-phone" 
+                        type="tel" 
+                        maxLength={10} 
+                        placeholder="9876543210" 
+                        required 
+                        className="pl-10 h-11"
+                        value={workerForm.phone}
+                        onChange={(e) => setWorkerForm({ ...workerForm, phone: e.target.value.replace(/\D/g, "") })}
+                      />
+                    </div>
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="worker-phone" className="text-xs uppercase tracking-wider opacity-70">Phone Number</Label>
+                  <Label htmlFor="worker-pass" className="text-xs font-bold text-muted-foreground">Password</Label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">+91</span>
-                    <Input id="worker-phone" type="tel" maxLength={10} placeholder="9876543210" required className="pl-12 bg-muted/30" />
+                    <Key className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                      id="worker-pass" 
+                      type="password" 
+                      placeholder="Enter a secure password" 
+                      required 
+                      className="pl-10 h-11"
+                      value={workerForm.password}
+                      onChange={(e) => setWorkerForm({ ...workerForm, password: e.target.value })}
+                    />
                   </div>
                 </div>
-                <Button type="submit" className="w-full h-11 font-medium cursor-pointer" disabled={loading}>
-                  {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Registering...</> : "Add Worker to System"}
+                <Button type="submit" className="w-full h-11 font-bold cursor-pointer" disabled={loading}>
+                  {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Registering...</> : "Register Worker"}
                 </Button>
               </form>
             </CardContent>
@@ -114,39 +181,59 @@ function AddResourceForm() {
         </TabsContent>
 
         <TabsContent value="vehicle" className="mt-6">
-          <Card className="border-border/50 bg-white/40 dark:bg-card/80 backdrop-blur-sm">
+          <Card className="border-border/60 bg-card shadow-sm">
             <CardHeader>
-              <CardTitle className="text-lg">Vehicle Onboarding</CardTitle>
-              <CardDescription>Register a new collection asset to the fleet.</CardDescription>
+              <CardTitle className="text-lg">Vehicle Registration</CardTitle>
+              <CardDescription>Enter the registration details of the collection vehicle.</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleVehicleSubmit} className="space-y-4">
+                {error && activeTab === "vehicle" && (
+                  <div className="p-3 rounded-md bg-destructive/10 border border-destructive/20 text-destructive text-xs font-medium flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4" /> {error}
+                  </div>
+                )}
                 <div className="space-y-2">
-                  <Label htmlFor="vehicle-no" className="text-xs uppercase tracking-wider opacity-70">Registration Number</Label>
-                  <Input id="vehicle-no" placeholder="UK 07 AB 1234" required className="bg-muted/30 font-mono uppercase" />
+                  <Label htmlFor="vehicle-no" className="text-xs font-bold text-muted-foreground">Registration Number</Label>
+                  <Input 
+                    id="vehicle-no" 
+                    placeholder="e.g. UK 07 AB 1234" 
+                    required 
+                    className="h-11 uppercase font-bold"
+                    value={vehicleForm.vehicleNo}
+                    onChange={(e) => setVehicleForm({ ...vehicleForm, vehicleNo: e.target.value.toUpperCase() })}
+                  />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="vehicle-type" className="text-xs uppercase tracking-wider opacity-70">Vehicle Type</Label>
-                    <Select required>
-                      <SelectTrigger id="vehicle-type" className="bg-muted/30">
-                        <SelectValue placeholder="Select type" />
+                    <Label htmlFor="worker-assign" className="text-xs font-bold text-muted-foreground">Manual Worker ID</Label>
+                    <div className="relative">
+                      <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        id="worker-assign" 
+                        placeholder="Enter Numeric ID (e.g. 101)" 
+                        required 
+                        className="pl-10 h-11 font-mono"
+                        value={vehicleForm.workerId}
+                        onChange={(e) => setVehicleForm({ ...vehicleForm, workerId: e.target.value.replace(/\D/g, "") })}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="vehicle-status" className="text-xs font-bold text-muted-foreground">Vehicle Status</Label>
+                    <Select value={vehicleForm.vehicleStatus} onValueChange={(v) => setVehicleForm({ ...vehicleForm, vehicleStatus: v })} required>
+                      <SelectTrigger id="vehicle-status" className="h-11">
+                        <SelectValue placeholder="Status" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="truck">Compactor Truck</SelectItem>
-                        <SelectItem value="mini-truck">Mini Loader</SelectItem>
-                        <SelectItem value="auto">Electric Tipper</SelectItem>
-                        <SelectItem value="e-rickshaw">E-Rickshaw</SelectItem>
+                        <SelectItem value="ACTIVE">ACTIVE</SelectItem>
+                        <SelectItem value="INACTIVE">INACTIVE</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="vehicle-ward" className="text-xs uppercase tracking-wider opacity-70">Primary Ward</Label>
-                    <Input id="vehicle-ward" placeholder="Ward 24" required className="bg-muted/30" />
-                  </div>
                 </div>
-                <Button type="submit" className="w-full h-11 font-medium cursor-pointer" disabled={loading}>
-                  {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Registering...</> : "Register Vehicle"}
+                <Button type="submit" className="w-full h-11 font-bold cursor-pointer" disabled={loading}>
+                  {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : "Register Vehicle"}
                 </Button>
               </form>
             </CardContent>

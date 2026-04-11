@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import {
   LayoutDashboard,
@@ -15,15 +15,22 @@ import {
 import { cn } from "@/lib/utils";
 
 const sidebarLinks = [
-  { href: "/admin/dashboard", icon: LayoutDashboard, label: "Command Center" },
-  { href: "/admin/routes", icon: Map, label: "Route Optimization" },
+  { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard Overview" },
+  { href: "/admin/routes", icon: Map, label: "Collection Routes" },
   { href: "/admin/complaints", icon: MessageSquareWarning, label: "Citizen Reports" },
-  { href: "/admin/workers", icon: Users, label: "Worker Logs" },
-  { href: "/admin/vehicles", icon: Truck, label: "Vehicles" },
+  { href: "/admin/workers", icon: Users, label: "Field Workers" },
+  { href: "/admin/vehicles", icon: Truck, label: "Vehicle Fleet" },
 ];
 
 export function AdminSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    router.push("/login");
+  };
 
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 hidden md:flex flex-col bg-sidebar border-r border-sidebar-border">
@@ -63,7 +70,10 @@ export function AdminSidebar() {
 
       {/* Bottom — just logout */}
       <div className="px-3 py-4 border-t border-sidebar-border">
-        <button className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-destructive hover:bg-destructive/10 transition-colors w-full">
+        <button 
+          onClick={handleLogout}
+          className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-destructive hover:bg-destructive/10 transition-colors w-full cursor-pointer"
+        >
           <LogOut className="h-4 w-4" />
           <span>Logout</span>
         </button>

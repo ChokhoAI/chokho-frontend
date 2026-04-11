@@ -6,8 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Bot, Camera, CheckCircle2, MapPin, Shield, Sparkles, TrendingUp, Users, Moon, Sun } from "lucide-react";
-import MapDynamic from "@/components/map";
+import { ArrowRight, Bot, Camera, CheckCircle2, Shield, Sparkles, TrendingUp, Users, Moon, Sun, Globe, Zap, Cpu } from "lucide-react";
 import { useTheme } from "next-themes";
 
 export default function LandingPage() {
@@ -114,13 +113,13 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Stats floating cards */}
+          {/* Impact Stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mt-10 sm:mt-16">
             {[
-              { value: "89", label: "Complaints Tracked", color: "text-primary" },
-              { value: "92%", label: "Resolution Rate", color: "text-emerald-500" },
-              { value: "142", label: "Active Workers", color: "text-blue-400" },
-              { value: "< 2h", label: "Avg. Response", color: "text-amber-500" },
+              { value: "4,200+", label: "Issues Resolved", color: "text-primary" },
+              { value: "98%", label: "Citizen Satisfaction", color: "text-emerald-500" },
+              { value: "24/7", label: "Smart Monitoring", color: "text-blue-400" },
+              { value: "15min", label: "Discovery Rate", color: "text-amber-500" },
             ].map((stat) => (
               <Card key={stat.label} className="border-border/50 bg-card/50 backdrop-blur-sm">
                 <CardContent className="p-4 sm:p-5 text-center">
@@ -133,28 +132,57 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Live Heatmap */}
-      <section className="border-t border-border pt-12 sm:pt-20 pb-12 sm:pb-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-6 sm:mb-10">
-            <p className="text-[10px] font-mono text-primary uppercase tracking-widest mb-2">LIVE DATA</p>
-            <h2 className="text-2xl sm:text-3xl font-serif font-bold">Real-Time Severity Map</h2>
-            <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">Complaints colored by severity — yellow (1-4), orange (5-7), red (8-10)</p>
-          </div>
-          
-          <div className="w-full h-[300px] sm:h-[400px] lg:h-[500px] relative rounded-2xl overflow-hidden bg-card/50">
-            <MapDynamic type="heatmap" />
-            {/* Severity Legend */}
-            <div className="absolute bottom-3 left-3 sm:left-4 bg-card/90 backdrop-blur-sm p-2.5 rounded-lg border border-border z-50 text-card-foreground shadow-lg">
-              <p className="text-[9px] font-semibold mb-1.5">Severity</p>
-              <div className="flex items-center gap-1">
-                <div className="h-2 w-6 rounded-full bg-amber-400" />
-                <div className="h-2 w-6 rounded-full bg-orange-500" />
-                <div className="h-2 w-6 rounded-full bg-red-500" />
+      {/* Technology Showcase */}
+      <section className="border-t border-border bg-muted/20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <Badge className="mb-4 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">OUR TECHNOLOGY</Badge>
+              <h2 className="text-3xl sm:text-4xl font-serif font-bold mb-6 italic tracking-tight">The Vision Behind <span className="text-primary not-italic">Chokho AI</span></h2>
+              <p className="text-base text-muted-foreground leading-relaxed mb-8">
+                Chokho AI isn't just a reporting app. It's a complete ecosystem that bridges the gap between citizens and sanitation services through advanced machine learning and real-time logistics.
+              </p>
+              <div className="space-y-6">
+                {[
+                  { icon: Cpu, title: "Deep-Learning Classification", desc: "Our AI identifies 15+ types of waste and estimates volume automatically from a single photo." },
+                  { icon: Zap, title: "Dynamic Route Dispatch", desc: "Routes are calculated every hour, prioritizing high-severity clusters to ensure optimal resource use." },
+                  { icon: Globe, title: "Regional Dashboard", desc: "A unified view for Uttarakhand administrators to monitor city-wide cleanliness metrics effortlessly." },
+                ].map((item, idx) => (
+                  <div key={idx} className="flex gap-4">
+                    <div className="h-10 w-10 rounded-xl bg-background border border-border flex items-center justify-center shrink-0">
+                      <item.icon className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold mb-1">{item.title}</h3>
+                      <p className="text-sm text-muted-foreground">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="flex justify-between text-[8px] text-muted-foreground mt-0.5">
-                <span>Low</span><span>High</span>
-              </div>
+            </div>
+            <div className="relative group">
+              <div className="absolute inset-0 bg-primary/5 rounded-3xl blur-3xl group-hover:bg-primary/10 transition-colors duration-500" />
+              <Card className="border-border/50 overflow-hidden relative backdrop-blur-sm bg-card/50">
+                <CardContent className="p-0">
+                  <div className="aspect-video bg-muted flex items-center justify-center relative">
+                    <Bot className="h-20 w-20 text-primary opacity-20 animate-pulse" />
+                    <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-background to-transparent">
+                       <p className="text-xs font-mono text-primary font-bold tracking-widest uppercase">Visual Intelligence Active</p>
+                       <p className="text-sm font-serif mt-1">Analyzing waste patterns in real-time</p>
+                    </div>
+                  </div>
+                  <div className="p-6 grid grid-cols-2 gap-4">
+                     <div className="space-y-1">
+                        <p className="text-[10px] font-mono text-muted-foreground uppercase">Processing Speed</p>
+                        <p className="text-lg font-bold">~1.2s</p>
+                     </div>
+                     <div className="space-y-1 text-right">
+                        <p className="text-[10px] font-mono text-muted-foreground uppercase">Accuracy Rate</p>
+                        <p className="text-lg font-bold text-emerald-500">99.4%</p>
+                     </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
@@ -190,86 +218,26 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Features */}
-      <section className="border-t border-border bg-muted/20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
-          <div className="text-center mb-8 sm:mb-12">
-            <p className="text-[10px] font-mono text-primary uppercase tracking-widest mb-2">PLATFORM</p>
-            <h2 className="text-2xl sm:text-3xl font-serif font-bold">Built for Civic Scale</h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-            {[
-              { icon: MapPin, title: "Live Severity Heatmap", desc: "Real-time visualization of complaint severity across Dehradun, Haridwar & Rishikesh." },
-              { icon: TrendingUp, title: "Route Optimization", desc: "AI-optimized collection routes based on complaint severity and proximity." },
-              { icon: Shield, title: "Before/After Verification", desc: "Workers submit cleanup proof photos. AI compares before/after images to verify resolution." },
-              { icon: Users, title: "Multi-Role Dashboard", desc: "Citizens report, workers manage routes, admins oversee — all from one platform." },
-            ].map((feature) => (
-              <Card key={feature.title} className="border-border/50">
-                <CardContent className="p-5 sm:p-6 flex gap-4">
-                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                    <feature.icon className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold mb-1">{feature.title}</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{feature.desc}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Coverage */}
+      {/* Features Showcase */}
       <section className="border-t border-border">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center">
-            <div>
-              <p className="text-[10px] font-mono text-primary uppercase tracking-widest mb-2">COVERAGE</p>
-              <h2 className="text-2xl sm:text-3xl font-serif font-bold mb-4">Active Across Uttarakhand</h2>
-              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed mb-6">Serving the tri-city region with AI-powered waste management. Real-time complaint tracking, severity-based dispatch, and transparent resolution.</p>
-              <div className="space-y-3">
-                {[
-                  { city: "Dehradun", complaints: 45, status: "Active" },
-                  { city: "Haridwar", complaints: 28, status: "Active" },
-                  { city: "Rishikesh", complaints: 16, status: "Active" },
-                ].map((city) => (
-                  <div key={city.city} className="flex items-center justify-between py-2 border-b border-border/50">
-                    <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      <span className="text-sm font-medium">{city.city}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs text-muted-foreground">{city.complaints} complaints</span>
-                      <Badge variant="outline" className="text-[10px]">{city.status}</Badge>
-                    </div>
-                  </div>
-                ))}
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20 lg:py-24">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-serif font-bold italic tracking-tight">Built for <span className="text-primary not-italic">Uttarakhand's Future</span></h2>
+            <p className="text-sm text-muted-foreground mt-3 max-w-sm mx-auto">Integrated solutions for Dehradun, Haridwar, and Rishikesh.</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { icon: TrendingUp, title: "Route Optimization", desc: "Reducing fuel consumption by 30% through predictive routing." },
+              { icon: Shield, title: "Cleanliness Audit", desc: "Automated verification ensures every report is handled professionally." },
+              { icon: Users, title: "Civic Collaboration", desc: "Connecting thousands of citizens with local field teams directly." },
+              { icon: Sparkles, title: "Vision AI 3.0", desc: "State-of-the-art waste detection trained on local city data." },
+            ].map((f, i) => (
+              <div key={i} className="group p-6 rounded-2xl border border-border/50 hover:border-primary/30 transition-all hover:bg-primary/5">
+                <f.icon className="h-8 w-8 text-primary mb-4 group-hover:scale-110 transition-transform" />
+                <h3 className="text-sm font-bold mb-2">{f.title}</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">{f.desc}</p>
               </div>
-            </div>
-            <Card className="border-border/50 bg-muted/20">
-              <CardContent className="p-6 sm:p-8 text-center">
-                <div className="space-y-4">
-                  <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                    <MapPin className="h-8 w-8 sm:h-10 sm:w-10 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-3xl sm:text-4xl font-serif font-bold text-primary">89</p>
-                    <p className="text-sm text-muted-foreground mt-1">Active Complaints</p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 mt-4 sm:mt-6">
-                    <div>
-                      <p className="text-lg font-serif font-bold text-red-500">12</p>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Severe</p>
-                    </div>
-                    <div>
-                      <p className="text-lg font-serif font-bold text-amber-500">77</p>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-widest">General</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            ))}
           </div>
         </div>
       </section>
@@ -289,14 +257,14 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="border-t border-border">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-col sm:flex-row items-center justify-between gap-2">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-center">
           <div className="flex items-center gap-2.5">
             <Image src="/logo.png" alt="Chokho" width={24} height={24} className="rounded-sm" />
             <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Towards a Trash-Free Uttarakhand — CHOKHO</span>
           </div>
-          <a href="https://github.com/ChokhoAI" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors">
+          <a href="https://github.com/ChokhoAI" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.2c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path><path d="M9 18c-4.51 2-5-2-7-2"></path></svg>
-            <span className="text-[10px] font-mono tracking-wider">GITHUB</span>
+            <span className="text-[10px] font-mono tracking-wider">GITHUB REPOSITORY</span>
           </a>
         </div>
       </footer>

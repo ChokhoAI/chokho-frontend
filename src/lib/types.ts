@@ -1,23 +1,23 @@
 export interface User {
   id: string;
   name: string;
-  email: string;
   phone: string;
   role: "citizen" | "worker" | "admin";
   avatar?: string;
-  address?: string;
   employeeId?: string;
 }
 
 export interface Complaint {
   id: string | number;
-  status: "pending" | "in-progress" | "resolved" | "rejected";
+  formattedId?: string;
+  complaintStatus: "PENDING" | "IN_PROGRESS" | "RESOLVED" | "REJECTED" | string;
   severityScore: number;
   location: string;
-  category: string;
+  trashType: string;
   createdAt: string;
   updatedAt?: string;
-  coordinates: { lat: number; lng: number };
+  latitude: number;
+  longitude: number;
   imageUrl?: string;
   cleanedImageUrl?: string;
   citizenId?: string;
@@ -30,25 +30,27 @@ export interface Complaint {
 
 export interface AdminComplaintData {
   formattedId: string;
-  trashType: string; // From TrashType enum
+  trashType: string;
   location: string;
   citizenName: string;
   severityScore: number;
-  volumeEstimate: string; // From VolumeEstimate enum
-  complaintStatus: string; // From ComplaintStatus enum
+  volumeEstimate: string;
+  complaintStatus: string;
   workerName: string;
   date: string;
 }
 
 export interface WorkerRouteComplaint {
   id: number;
+  complaintId: string | number;
   latitude: number;
   longitude: number;
-  location: string;
+  locationName: string;
   imageUrl: string;
-  status: string; // From ComplaintStatus enum
+  complaintStatus: string;
   sequenceNo: number;
   severityScore: number;
+  wasteType: string;
 }
 
 export interface Worker {
@@ -65,18 +67,19 @@ export interface Worker {
 
 export interface Vehicle {
   id: string;
-  registrationNumber: string;
-  type: "truck" | "mini-truck" | "auto";
-  status: "active" | "maintenance" | "idle";
+  vehicleNo: string;
+  vehicleId: string;
+  type: string;
+  vehicleStatus: "ACTIVE" | "MAINTENANCE" | "IDLE";
   assignedDriver?: string;
-  assignedRoute?: string;
+  workerName?: string;
 }
 
 export interface Route {
   id: string;
   name: string;
   ward: string;
-  status: "active" | "completed" | "pending";
+  status: "ACTIVE" | "COMPLETED" | "PENDING";
   assignedWorker?: string;
   assignedVehicle?: string;
   stops: { sequenceNo: number; complaintId: string }[];
@@ -95,10 +98,12 @@ export interface AdminDashboardData {
   totalActiveVehicles: number;
   totalVehicles: number;
   efficiency: number;
+  activeRoutes: any[];
+  recentComplaints: any[];
 }
 
 export interface CitizenDashboardData {
-  complaintResolvedPercentage: number;
+  resolvedPercentage: number;
   totalComplaints: number;
   resolvedComplaints: number;
   pendingComplaints: number;
@@ -108,11 +113,13 @@ export interface CitizenDashboardData {
 export interface WorkerDashboardData {
   name: string;
   empId: string;
-  vehicleNumber: string;
+  vehicleNo: string;
   routeStatus: string;
-  totalRouteComplaints: number;
-  resolvedRouteComplaints: number;
-  clusterId: string;
+  totalComplaints: number;
+  completedComplaints: number;
+  pendingComplaints: number;
+  complaints: any[];
+  routeId: string;
 }
 
 export interface WorkerProfileData {
@@ -127,7 +134,7 @@ export interface CitizenProfileData {
   name: string;
   username: string;
   phone: string;
-  address: string;
+  createdAt: string;
 }
 
 export interface AdminWorkerResponse {

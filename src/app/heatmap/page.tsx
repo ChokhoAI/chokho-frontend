@@ -1,16 +1,22 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { complaints } from "@/lib/mock-data";
-import { Flame, MapPin, Clock, Layers, ArrowLeft } from "lucide-react";
+import { useEffect, useState } from "react";
+import { complaintApi } from "@/lib/api";
+import { ArrowLeft } from "lucide-react";
 import MapDynamic from "@/components/map";
 import { useRouter } from "next/navigation";
 
 export default function HeatmapPage() {
   const router = useRouter();
-  const highSeverity = complaints.filter(c => c.severityScore >= 7);
+  const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    complaintApi.getHeatmap()
+      .then(setData)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <div className="min-h-screen bg-background p-4 sm:p-6 lg:p-8 space-y-6">
@@ -18,7 +24,7 @@ export default function HeatmapPage() {
         <div className="flex items-center gap-4">
           <button 
             onClick={() => router.back()} 
-            className="p-2 rounded-full hover:bg-muted transition-colors border border-border cursor-pointer"
+            className="p-2 rounded-full hover:bg-muted transition-colors border border-border cursor-pointer flex items-center justify-center"
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
@@ -36,8 +42,17 @@ export default function HeatmapPage() {
       {/* Map Section */}
       <div className="max-w-6xl mx-auto w-full">
         <div className="overflow-hidden rounded-2xl border border-border shadow-2xl relative">
-          <div className="h-[500px] sm:h-[600px] lg:h-[700px] relative z-0">
-            <MapDynamic type="heatmap" />
+          <div className="h-[600px] sm:h-[700px] lg:h-[800px] relative z-0">
+            {loading ? (
+              <div className="w-full h-full flex items-center justify-center bg-muted/20">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                  <p className="text-sm font-mono text-muted-foreground">Loading Heatmap...</p>
+                </div>
+              </div>
+            ) : (
+              <MapDynamic type="heatmap" data={data} />
+            )}
             {/* Legend */}
             <div className="absolute bottom-4 left-4 bg-card/90 backdrop-blur-sm p-3 rounded-lg border border-border z-50 text-card-foreground shadow-lg">
               <p className="text-[10px] font-semibold mb-2">Severity</p>
@@ -50,48 +65,9 @@ export default function HeatmapPage() {
                 <span>1-4</span><span>5-7</span><span>8-10</span>
               </div>
             </div>
-            <div className="absolute top-4 right-4 bg-card/90 backdrop-blur-sm p-2 rounded-lg border border-border z-50 text-card-foreground shadow-lg cursor-pointer hover:bg-muted/50 transition-colors">
-              <Layers className="h-4 w-4 text-muted-foreground" />
-            </div>
           </div>
-        </div>
-      </div>
-
-      {/* High Severity Complaints Section */}
-      <div className="max-w-6xl mx-auto w-full">
-        <div className="flex items-center gap-2 mb-4">
-          <Flame className="h-5 w-5 text-red-500" />
-          <h2 className="text-lg font-serif font-semibold">Critical Situations</h2>
-          <Badge variant="outline" className="ml-2 text-[10px]">{highSeverity.length} reports</Badge>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {highSeverity.map((c) => (
-            <Card key={c.id} className="border-border/50 bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-all hover:shadow-lg group">
-              <CardContent className="p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] font-mono text-muted-foreground group-hover:text-primary transition-colors">{c.id}</span>
-                  <div className={paddingClass(c.severityScore)}>
-                    <span className={`text-xs font-mono font-bold ${c.severityScore >= 8 ? "text-red-500" : "text-orange-500"}`}>{c.severityScore}/10</span>
-                  </div>
-                </div>
-                <h3 className="text-base font-medium mb-2">{c.category}</h3>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <MapPin className="h-3.5 w-3.5" />
-                    <span className="truncate">{c.location}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                    <Clock className="h-3.5 w-3.5" />
-                    <span>Reported {new Date(c.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
         </div>
       </div>
     </div>
   );
 }
-
-const paddingClass = (s: number) => `px-2 py-0.5 rounded font-mono text-[10px] border ${s >= 8 ? "bg-red-500/10 border-red-500/20" : "bg-orange-500/10 border-orange-500/20"}`;

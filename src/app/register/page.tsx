@@ -8,25 +8,38 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, User, Loader2 } from "lucide-react";
+import { authApi } from "@/lib/api";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
     password: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Mimic backend delay
-    setTimeout(() => {
+    setError("");
+    setSuccess("");
+
+    try {
+      await authApi.register(formData);
+      
+      setSuccess("Account created successfully! Redirecting to login...");
       setLoading(false);
-      router.push("/login");
-    }, 1200);
+      setTimeout(() => {
+        router.push("/login");
+      }, 2000);
+    } catch (err: any) {
+      setError(err.message || "Registration failed. Phone number might already be in use.");
+      setLoading(false);
+    }
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,13 +66,23 @@ export default function RegisterPage() {
             </div>
             <div>
               <CardTitle className="text-2xl font-serif">Join Chokho</CardTitle>
-              <CardDescription className="font-mono text-xs tracking-wider mt-1">
-                CITIZEN REGISTRATION
+              <CardDescription className="font-mono text-[10px] tracking-widest mt-1 uppercase text-primary/80">
+                Citizen Registration
               </CardDescription>
             </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <div className="p-2.5 rounded bg-destructive/10 border border-destructive/20 text-destructive text-[11px] font-mono text-center">
+                  {error}
+                </div>
+              )}
+              {success && (
+                <div className="p-2.5 rounded bg-green-500/10 border border-green-500/20 text-green-500 text-[11px] font-mono text-center">
+                  {success}
+                </div>
+              )}
               <div className="space-y-1.5">
                 <Label htmlFor="name" className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Full Name</Label>
                 <Input

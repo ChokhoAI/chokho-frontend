@@ -1,9 +1,8 @@
 "use client";
 
-import { MapContainer, TileLayer, Marker, Popup, Polyline, CircleMarker } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Polyline, Tooltip } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { complaints, routes, searchComplaints, getSeverityColor, workerRouteComplaints, vehicles } from "@/lib/mock-data";
 import { Badge } from "@/components/ui/badge";
 
 // Fix leaflet icon issue in Next.js
@@ -24,6 +23,7 @@ const truckIcon = new L.Icon({
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
+  tooltipAnchor: [16, -28],
   shadowSize: [41, 41]
 });
 
@@ -33,12 +33,17 @@ function severityHex(score: number): string {
   return "#FBBF24";
 }
 
+const colors = [
+  "#EF4444", "#10B981", "#3B82F6", "#F59E0B", "#8B5CF6", 
+  "#EC4899", "#06B6D4", "#84CC16", "#F97316", "#6366F1"
+];
+
 export interface MapProps {
   type: "worker-route" | "admin-routes" | "heatmap";
-  routeId?: string;
+  data?: any;
 }
 
-export default function BaseMap({ type, routeId }: MapProps) {
+export default function BaseMap({ type, data }: MapProps) {
   const center: [number, number] = [30.3165, 78.0322];
   const tileUrl = "https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png";
   const attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
@@ -53,7 +58,7 @@ export default function BaseMap({ type, routeId }: MapProps) {
   };
 
   if (type === "worker-route") {
-    const stops = workerRouteComplaints;
+    const stops = data || [];
     const polylinePositions: [number, number][] = stops.map((s: any) => [s.latitude, s.longitude]);
     
     return (
@@ -62,16 +67,19 @@ export default function BaseMap({ type, routeId }: MapProps) {
         <Polyline positions={polylinePositions} color="hsl(var(--primary))" weight={4} opacity={0.7} dashArray="5, 10" />
         
         {stops.map((s: any) => (
-          <Marker key={s.id} position={[s.latitude, s.longitude]} icon={createColoredPin(severityHex(s.severityScore))}>
+          <Marker key={s.id || s.complaintId} position={[s.latitude, s.longitude]} icon={createColoredPin(severityHex(s.severityScore))}>
             <Popup>
               <div className="font-sans">
-                <p className="font-semibold text-sm mb-1">{s.location}</p>
+                <p className="font-semibold text-sm mb-1">{s.location || s.area}</p>
                 <div className="flex gap-2">
-                  <span className="text-xs text-muted-foreground">ID: {s.id}</span>
+                  <span className="text-xs text-muted-foreground">ID: {s.id || s.complaintId}</span>
                   <span className="text-[10px] px-1.5 rounded-sm" style={{ backgroundColor: severityHex(s.severityScore) + '20', color: severityHex(s.severityScore) }}>
                     Sequence: {s.sequenceNo}
                   </span>
                 </div>
+                {s.imageUrl && (
+                  <img src={s.imageUrl} alt="Complaint" className="mt-2 w-full h-24 object-cover rounded-md" />
+                )}
               </div>
             </Popup>
           </Marker>
@@ -81,59 +89,70 @@ export default function BaseMap({ type, routeId }: MapProps) {
   }
 
   if (type === "admin-routes") {
+    const routes = data || [];
     return (
       <MapContainer center={center} zoom={13} zoomControl={false} attributionControl={false} style={{ height: "100%", width: "100%", zIndex: 1 }}>
         <TileLayer url={tileUrl} attribution={attribution} />
         
-        {routes.filter(r => r.status === "active").map((route, i: number) => {
-          const routeComplaints = (route.stops || [])
-            .map((s: any) => complaints.find(c => c.id === s.complaintId))
-            .filter((c): c is NonNullable<typeof c> => c !== undefined);
-
-          const polylinePositions: [number, number][] = routeComplaints.map((c: any) => [c.coordinates.lat, c.coordinates.lng]);
-          const colors = ["#D97706", "#10B981", "#3B82F6"];
+        {routes.map((route: any, i: number) => {
+          const polylinePositions: [number, number][] = (route.stops || []).map((s: any) => [s.latitude, s.longitude]);
           const color = colors[i % colors.length];
 
           return (
             <div key={route.id}>
               <Polyline positions={polylinePositions} color={color} weight={4} opacity={0.7} />
-              {routeComplaints.map((complaint) => (
-                <Marker key={`${route.id}-${complaint.id}`} position={[complaint.coordinates.lat, complaint.coordinates.lng]} icon={createColoredPin(color)}>
-                  <Popup>{complaint.location}</Popup>
+              {(route.stops || []).map((stop: any) => (
+                <Marker key={`${route.id}-${stop.id || stop.complaintId}`} position={[stop.latitude, stop.longitude]} icon={createColoredPin(color)}>
+                  <Popup>
+                    <div className="font-sans p-1">
+                      <p className="font-bold text-xs uppercase text-muted-foreground mb-1">Route: {route.formattedId}</p>
+                      <p className="text-sm font-semibold">{stop.id || stop.complaintId}</p>
+                      <p className="text-[10px] mt-1">Worker: {route.workerName}</p>
+                      <p className="text-[10px]">Vehicle: {route.vehicleNo}</p>
+                    </div>
+                  </Popup>
                 </Marker>
               ))}
             </div>
           );
         })}
-
-        {vehicles.filter(v => v.type === "truck" || v.type === "mini-truck").slice(0, 3).map((v, i: number) => (
-           <Marker key={v.id} position={[center[0] + (i * 0.01), center[1] + (i * 0.015)]} icon={truckIcon}>
-            <Popup className="font-sans text-sm font-semibold">{v.registrationNumber}</Popup>
-           </Marker>
-        ))}
       </MapContainer>
     );
   }
 
   if (type === "heatmap") {
+    const complaints = data || [];
     return (
       <MapContainer center={center} zoom={12} zoomControl={false} attributionControl={false} style={{ height: "100%", width: "100%", zIndex: 1 }}>
         <TileLayer url={tileUrl} attribution={attribution} />
         
-        {/* Using workerRouteComplaints for live sample points if complaints doesn't have coords */}
-        {workerRouteComplaints.map((s: any) => {
+        {complaints.map((s: any, i: number) => {
           const color = severityHex(s.severityScore);
 
           return (
             <Marker 
-              key={`heat-${s.id}`} 
+              key={`heat-${i}`} 
               position={[s.latitude, s.longitude]} 
               icon={createColoredPin(color)}
             >
+              <Tooltip permanent={false} direction="top" offset={[0, -10]} opacity={1}>
+                <div className="font-sans w-32">
+                  {s.imageUrl ? (
+                    <img src={s.imageUrl} alt="Complaint" className="w-full h-20 object-cover rounded-md mb-2 shadow-sm border border-border" />
+                  ) : (
+                    <div className="w-full h-20 bg-muted rounded-md flex items-center justify-center mb-2">
+                       <span className="text-[10px] text-muted-foreground">No image</span>
+                    </div>
+                  )}
+                  <p className="text-[10px] font-bold text-center leading-tight">Severity: {s.severityScore}/10</p>
+                  <p className="text-[9px] text-muted-foreground text-center mt-0.5">{s.complaintStatus}</p>
+                </div>
+              </Tooltip>
               <Popup>
                 <div className="font-sans">
-                  <p className="font-semibold">{s.location}</p>
-                  <p className="text-xs mt-1">Severity: {s.severityScore}/10</p>
+                  <p className="font-semibold">Complaint Point</p>
+                  <p className="text-xs mt-1">Status: {s.complaintStatus}</p>
+                  <p className="text-xs">Severity Score: {s.severityScore}</p>
                 </div>
               </Popup>
             </Marker>

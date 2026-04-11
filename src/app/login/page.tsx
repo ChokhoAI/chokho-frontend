@@ -9,22 +9,39 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { authApi } from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [role, setRole] = useState<"citizen" | "worker" | "admin">("citizen");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      router.push(`/${role}/dashboard`);
-    }, 800);
+    setError("");
+
+    try {
+      const response = await authApi.login({ phone, password });
+      
+      // Store token and user info
+      localStorage.setItem("token", response.token);
+      localStorage.setItem("user", JSON.stringify(response));
+
+      // Redirect based on role returned by backend
+      const userRole = response.role.toLowerCase();
+      router.push(`/${userRole}/dashboard`);
+    } catch (err: any) {
+      setError(err.message || "Invalid phone number or password");
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-background relative">
+    <div className="min-h-screen w-full flex items-center justify-center px-4 bg-background relative overflow-x-hidden">
       {/* Ambient background */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-primary/3 rounded-full blur-[150px] pointer-events-none" />
 
@@ -42,29 +59,23 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
-            {/* Role Selection — Dropdown */}
+            {error && (
+              <div className="p-2.5 rounded bg-destructive/10 border border-destructive/20 text-destructive text-[11px] font-mono text-center">
+                {error}
+              </div>
+            )}
             <div className="space-y-2">
-              <Label htmlFor="role" className="text-xs">Sign in as</Label>
-              <Select value={role} onValueChange={(v) => setRole(v as typeof role)}>
-                <SelectTrigger id="role" className="bg-muted/50">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="citizen">Citizen</SelectItem>
-                  <SelectItem value="worker">Worker</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-xs">
-                {role === "citizen" ? "Email or Phone" : "Employee ID"}
+              <Label htmlFor="phone" className="text-xs">
+                Phone Number
               </Label>
               <Input
-                id="email"
-                placeholder={role === "citizen" ? "you@example.com" : "EMP-XXXX"}
-                className="h-10 bg-muted/50"
+                id="phone"
+                type="tel"
+                placeholder="10-digit number"
+                className="h-10 bg-muted/50 font-mono"
+                required
+                value={phone}
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
               />
             </div>
 
@@ -75,6 +86,9 @@ export default function LoginPage() {
                 type="password"
                 placeholder="••••••••"
                 className="h-10 bg-muted/50"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
             </div>
 
@@ -89,18 +103,12 @@ export default function LoginPage() {
               )}
             </Button>
 
-            {role === "citizen" ? (
-              <p className="text-center text-[11px] text-muted-foreground pt-1">
-                Don&apos;t have an account?{" "}
-                <Link href="/register" className="text-primary font-bold hover:underline underline-offset-4">
-                  Sign up
-                </Link>
-              </p>
-            ) : (
-              <p className="text-center text-[10px] text-muted-foreground font-mono">
-                Use your Employee ID to login
-              </p>
-            )}
+            <p className="text-center text-[11px] text-muted-foreground pt-1">
+              Don&apos;t have an account?{" "}
+              <Link href="/register" className="text-primary font-bold hover:underline underline-offset-4">
+                Sign up
+              </Link>
+            </p>
           </form>
         </CardContent>
       </Card>

@@ -1,26 +1,57 @@
 "use client";
 
+import { useEffect, useState, use } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { complaints } from "@/lib/mock-data";
-import { ArrowLeft, MapPin, Clock, User, Bot, CheckCircle2, ImageIcon } from "lucide-react";
+import { citizenApi } from "@/lib/api";
+import { ArrowLeft, MapPin, Clock, User, Bot, CheckCircle2, ImageIcon, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { use } from "react";
+import { formatDateTime } from "@/lib/utils";
 
 export default function ComplaintDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const complaint = complaints.find((c) => c.id === id) || complaints[0];
+  const [complaint, setComplaint] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const severityColor = complaint.severityScore >= 8 ? "text-red-500" : complaint.severityScore >= 5 ? "text-orange-500" : "text-amber-400";
-  const severityBg = complaint.severityScore >= 8 ? "bg-red-500/10" : complaint.severityScore >= 5 ? "bg-orange-500/10" : "bg-amber-400/10";
+  useEffect(() => {
+    citizenApi.getComplaintDetail(id)
+      .then(setComplaint)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [id]);
 
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm font-mono text-muted-foreground">Fetching report details...</p>
+      </div>
+    );
+  }
+
+  if (!complaint) {
+    return (
+      <div className="px-4 py-12 text-center">
+        <p className="text-muted-foreground">Complaint not found.</p>
+        <Link href="/citizen/complaints">
+          <Badge className="mt-4 cursor-pointer">Back to List</Badge>
+        </Link>
+      </div>
+    );
+  }
+
+  const severityScore = complaint.severityScore || 0;
+  const severityColor = severityScore >= 8 ? "text-red-500" : severityScore >= 5 ? "text-orange-500" : "text-amber-400";
+  
   const timeline = [
-    { time: "08:30 AM", label: "Complaint Filed", desc: complaint.citizenName, icon: User, done: true },
-    { time: "09:15 AM", label: "AI Analysis Complete", desc: complaint.aiAnalysis || "Processing...", icon: Bot, done: !!complaint.aiAnalysis },
-    { time: "10:00 AM", label: "Assigned to Worker", desc: complaint.assignedWorkerName || "Pending assignment", icon: User, done: !!complaint.assignedWorkerId },
-    { time: "—", label: "Resolution", desc: complaint.status === "resolved" ? "Issue resolved" : "In progress", icon: CheckCircle2, done: complaint.status === "resolved" },
+    { time: complaint.createdAt ? formatDateTime(complaint.createdAt) : "Pending", label: "Complaint Filed", desc: complaint.citizenName || "Citizen User", icon: User, done: !!complaint.createdAt },
+    { time: complaint.aiAnalysis ? "AI Verified" : "—", label: "AI Analysis Complete", desc: complaint.aiAnalysis || "Awaiting processing...", icon: Bot, done: !!complaint.aiAnalysis },
+    { time: (complaint.workerName || complaint.assignedWorkerName || complaint.assignedWorkerId) ? "Assigned" : "—", label: "Assigned to Worker", desc: complaint.workerName || complaint.assignedWorkerName || (complaint.assignedWorkerId ? `Worker #${complaint.assignedWorkerId}` : "Pending assignment"), icon: User, done: !!(complaint.assignedWorkerId || complaint.workerName || complaint.assignedWorkerName) },
+    { time: complaint.complaintStatus === "RESOLVED" ? "Resolved" : "—", label: "Resolution", desc: complaint.complaintStatus === "RESOLVED" ? "Issue resolved" : "In Progress", icon: CheckCircle2, done: complaint.complaintStatus === "RESOLVED" },
   ];
+
+  const showAfterPhoto = complaint.complaintStatus === "RESOLVED" && complaint.cleanedImageUrl;
 
   return (
     <div className="px-4 py-4 space-y-4">
@@ -29,31 +60,33 @@ export default function ComplaintDetail({ params }: { params: Promise<{ id: stri
           <ArrowLeft className="h-4 w-4" />
         </Link>
         <div>
-          <h1 className="text-lg font-serif font-semibold">Complaint Detail</h1>
-          <p className="text-[10px] font-mono text-muted-foreground">{complaint.id}</p>
+          <h1 className="text-lg font-serif font-semibold">Report Analysis</h1>
+          <p className="text-[10px] font-mono text-muted-foreground">{complaint.formattedId || complaint.id || "CH-REPORT-X"}</p>
         </div>
       </div>
 
       {/* Status */}
-      <Card className={`border-border/50 ${complaint.cleaned ? "bg-emerald-500/5" : ""}`}>
+      <Card className={`border-border/50 ${complaint.complaintStatus === "RESOLVED" ? "bg-emerald-500/5" : ""}`}>
         <CardContent className="p-4">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <h2 className="text-sm font-semibold">{complaint.category} — {complaint.location}</h2>
+              <h2 className="text-sm font-semibold truncate tracking-tight">{complaint.trashType || "General Waste"}</h2>
               <div className="flex items-center gap-1.5 mt-1.5">
                 <MapPin className="h-3 w-3 text-muted-foreground" />
-                <p className="text-xs text-muted-foreground">{complaint.location}</p>
+                <p className="text-xs text-muted-foreground truncate">{complaint.location || "Co-ordinates Only"}</p>
               </div>
             </div>
             <div className="flex flex-col items-end gap-1">
-              <Badge variant={complaint.status === "resolved" ? "secondary" : "default"} className="text-[10px]">{complaint.status}</Badge>
-              <span className={`text-xs font-mono font-bold ${severityColor}`}>{complaint.severityScore}/10</span>
+              <Badge variant={complaint.complaintStatus === "RESOLVED" ? "secondary" : "default"} className="text-[10px] tracking-tighter px-2 py-0">
+                {complaint.complaintStatus || "PENDING"}
+              </Badge>
+              <span className={`text-xs font-mono font-bold ${severityColor}`}>Severity {severityScore}/10</span>
             </div>
           </div>
-          <Separator className="my-3" />
+          <Separator className="my-3 opacity-50" />
           <div className="flex items-center gap-3">
-            <Badge variant="outline" className="text-[10px]">{complaint.category}</Badge>
-            {complaint.cleaned && <Badge variant="outline" className="text-[10px] text-emerald-500 border-emerald-500/30">Cleaned</Badge>}
+            <Badge variant="outline" className="text-[9px] font-mono">{complaint.trashType || "UNIDENTIFIED"}</Badge>
+            {complaint.complaintStatus === "RESOLVED" && <Badge variant="outline" className="text-[9px] font-mono text-emerald-500 border-emerald-500/30">DISPOSED</Badge>}
           </div>
         </CardContent>
       </Card>
@@ -64,14 +97,14 @@ export default function ComplaintDetail({ params }: { params: Promise<{ id: stri
           <CardContent className="p-4">
             <p className="text-xs font-semibold mb-3 uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
               <ImageIcon className="h-3 w-3" />
-              {complaint.cleanedImageUrl ? "Before & After" : "Evidence Photo"}
+              {showAfterPhoto ? "Before & After" : "Evidence Photo"}
             </p>
-            <div className={`grid ${complaint.cleanedImageUrl ? "grid-cols-2 gap-3" : "grid-cols-1"}`}>
+            <div className={`grid ${showAfterPhoto ? "grid-cols-2 gap-3" : "grid-cols-1"}`}>
               <div>
-                {complaint.cleanedImageUrl && <p className="text-[10px] text-muted-foreground mb-1.5">Before</p>}
+                {showAfterPhoto && <p className="text-[10px] text-muted-foreground mb-1.5">Before</p>}
                 <img src={complaint.imageUrl} alt="Before" className="w-full h-40 object-cover rounded-lg" />
               </div>
-              {complaint.cleanedImageUrl && (
+              {showAfterPhoto && (
                 <div>
                   <p className="text-[10px] text-muted-foreground mb-1.5">After</p>
                   <img src={complaint.cleanedImageUrl} alt="After" className="w-full h-40 object-cover rounded-lg" />
@@ -122,9 +155,9 @@ export default function ComplaintDetail({ params }: { params: Promise<{ id: stri
       </Card>
 
       {/* Meta */}
-      <div className="flex items-center gap-2 text-[10px] font-mono text-muted-foreground">
+      <div className="flex items-center gap-2 text-[10px] font-mono text-muted-foreground opacity-60">
         <Clock className="h-3 w-3" />
-        <span>Created {new Date(complaint.createdAt).toLocaleString()}</span>
+        <span>Sync Log: {complaint.createdAt ? formatDateTime(complaint.createdAt) : "Real-time Trace"}</span>
       </div>
     </div>
   );
