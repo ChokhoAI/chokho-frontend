@@ -151,3 +151,20 @@ export interface AdminVehicleResponse {
   workerName: string;
 }
 
+
+export interface Notification {
+  id: string;
+  title: string;
+  description: string;
+  type: "success" | "error" | "info" | "pending";
+  timestamp: string;
+  read: boolean;
+}
+
+export interface NotificationContextType {
+  notifications: Notification[];
+  addNotification: (notification: Omit<Notification, "id" | "timestamp" | "read">) => string;
+  markAsRead: (id: string) => void;
+  clearAll: () => void;
+  unreadCount: number;
+}

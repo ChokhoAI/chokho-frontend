@@ -8,10 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
-import { Moon, LogOut, Loader2, Phone, Calendar } from "lucide-react";
+import { Moon, LogOut, Loader2, Phone, Calendar, Bell, Trash2 } from "lucide-react";
 import { citizenApi } from "@/lib/api";
 import { useToast } from "@/components/ui/use-toast";
-import { formatDate } from "@/lib/utils";
+import { formatDate, cn } from "@/lib/utils";
+import { useNotifications } from "@/components/notification-context";
 
 export default function CitizenProfile() {
   const router = useRouter();
@@ -20,6 +21,8 @@ export default function CitizenProfile() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+
+  const { notifications, clearAll, markAsRead } = useNotifications();
 
   useEffect(() => {
     setMounted(true);
@@ -97,25 +100,63 @@ export default function CitizenProfile() {
         </CardContent>
       </Card>
 
-      {/* Settings */}
-      <Card className="border-border/50">
-        <CardContent className="p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3"><Moon className="h-4 w-4 text-muted-foreground" /><span className="text-sm font-medium">Dark Mode Appearance</span></div>
-            <Switch 
-              checked={mounted && theme === "dark"} 
-              onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")} 
-            />
-          </div>
-        </CardContent>
-      </Card>
+      {/* Notification History */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between px-1">
+          <h2 className="text-sm font-serif font-semibold flex items-center gap-2">
+            <Bell className="h-4 w-4" /> Notification History
+          </h2>
+          {notifications.length > 0 && (
+            <button 
+              onClick={clearAll}
+              className="text-[10px] text-destructive hover:underline flex items-center gap-1"
+            >
+              <Trash2 className="h-3 w-3" /> Clear All
+            </button>
+          )}
+        </div>
+        <Card className="border-border/50">
+          <CardContent className="p-0">
+            {notifications.length === 0 ? (
+              <div className="p-8 text-center space-y-2">
+                <Bell className="h-8 w-8 text-muted-foreground/30 mx-auto" />
+                <p className="text-xs text-muted-foreground">No notifications stored on this device.</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-border/50">
+                {notifications.map((n) => (
+                  <div 
+                    key={n.id} 
+                    className={cn(
+                      "p-4 space-y-1 transition-colors",
+                      !n.read && "bg-primary/5"
+                    )}
+                    onClick={() => markAsRead(n.id)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">{n.title}</span>
+                      <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                        {new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{n.description}</p>
+                    {n.type === 'pending' && (
+                      <Badge variant="outline" className="text-[9px] h-4 py-0 border-primary/30 text-primary animate-pulse">Processing</Badge>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       <Button 
         onClick={handleLogout}
         variant="outline" 
         className="w-full gap-2 text-destructive border-destructive/30 hover:bg-destructive/10 cursor-pointer"
       >
-        <LogOut className="h-4 w-4" /> Sign Out from Chokho AI
+        <LogOut className="h-4 w-4" /> Sign Out
       </Button>
     </div>
   );

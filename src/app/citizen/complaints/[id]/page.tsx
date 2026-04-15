@@ -102,12 +102,12 @@ export default function ComplaintDetail({ params }: { params: Promise<{ id: stri
             <div className={`grid ${showAfterPhoto ? "grid-cols-2 gap-3" : "grid-cols-1"}`}>
               <div>
                 {showAfterPhoto && <p className="text-[10px] text-muted-foreground mb-1.5">Before</p>}
-                <img src={complaint.imageUrl} alt="Before" className="w-full h-40 object-cover rounded-lg" />
+                <img src={complaint.imageUrl} alt="Before" className="w-full h-auto rounded-lg shadow-sm border border-border/10" />
               </div>
               {showAfterPhoto && (
                 <div>
                   <p className="text-[10px] text-muted-foreground mb-1.5">After</p>
-                  <img src={complaint.cleanedImageUrl} alt="After" className="w-full h-40 object-cover rounded-lg" />
+                  <img src={complaint.cleanedImageUrl} alt="After" className="w-full h-auto rounded-lg shadow-sm border border-border/10" />
                 </div>
               )}
             </div>

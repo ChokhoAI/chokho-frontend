@@ -8,6 +8,7 @@ import { citizenApi } from "@/lib/api";
 import { ArrowLeft, Camera, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/components/ui/use-toast";
+import { useNotifications } from "@/components/notification-context";
 
 export default function NewComplaint() {
   const router = useRouter();
@@ -15,6 +16,7 @@ export default function NewComplaint() {
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const { addNotification } = useNotifications();
   const { toast } = useToast();
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -33,26 +35,36 @@ export default function NewComplaint() {
     if (!imageFile) return;
 
     setLoading(true);
+    // 1. Show immediate "Submitting" notification
+    addNotification({
+      title: "Submitting Report",
+      description: "We are uploading your report to Chokho AI. This may take a moment...",
+      type: "pending",
+    });
+
+    // 2. Redirect immediately
+    router.push("/citizen/dashboard");
+
+    // 3. Trigger API call in the "background"
     try {
       const formData = new FormData();
       formData.append("image", imageFile);
       
       const response = await citizenApi.reportComplaint(formData);
       
-      toast({
-        title: "Report Submitted",
+      // 4. Update with success notification
+      addNotification({
+        title: "Report Submitted Successfully",
         description: response || "Thank you for your contribution. Chokho AI is processing your report.",
+        type: "success",
       });
-      
-      router.push("/citizen/complaints");
     } catch (error) {
-      toast({
+      // 5. Update with error notification
+      addNotification({
         title: "Submission Failed",
         description: error instanceof Error ? error.message : "Check your connection and try again.",
-        variant: "destructive",
+        type: "error",
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -88,7 +100,7 @@ export default function NewComplaint() {
             </div>
           ) : (
             <div className="relative rounded-lg overflow-hidden">
-              <img src={imagePreview} alt="Captured" className="w-full h-48 object-cover rounded-lg" />
+              <img src={imagePreview} alt="Captured" className="w-full h-auto rounded-lg shadow-sm" />
               <button 
                 onClick={() => { setImagePreview(null); setImageFile(null); }}
                 className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm rounded-full p-1.5 text-xs hover:bg-background transition-colors"

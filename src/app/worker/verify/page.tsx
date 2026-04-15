@@ -135,7 +135,7 @@ function VerifyCleanupContent() {
               <Label className="text-xs">Reference Image (Reported)</Label>
             </div>
             {selectedComplaint.imageUrl ? (
-              <img src={selectedComplaint.imageUrl} alt="Before" className="w-full h-40 object-cover rounded-lg" />
+              <img src={selectedComplaint.imageUrl} alt="Before" className="w-full h-auto rounded-lg shadow-sm" />
             ) : (
               <div className="h-40 bg-muted/30 rounded-lg flex items-center justify-center">
                 <p className="text-xs text-muted-foreground">No reference image</p>
@@ -160,7 +160,7 @@ function VerifyCleanupContent() {
               </div>
             ) : (
               <div className="relative">
-                <img src={afterImagePreview} alt="After" className="w-full h-40 object-cover rounded-lg" />
+                <img src={afterImagePreview} alt="After" className="w-full h-auto rounded-lg shadow-sm" />
                 <button 
                   onClick={() => { setAfterImageFile(null); setAfterImagePreview(null); }}
                   className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm rounded-full p-1.5 text-xs hover:bg-background transition-colors"
