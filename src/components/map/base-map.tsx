@@ -1,36 +1,17 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, Tooltip } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { Badge } from "@/components/ui/badge";
 
-// Fix leaflet icon issue in Next.js
-const customIcon = new L.Icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  tooltipAnchor: [16, -28],
-  shadowSize: [41, 41]
-});
-
-const truckIcon = new L.Icon({
-  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  tooltipAnchor: [16, -28],
-  shadowSize: [41, 41]
-});
+// Dehradun Municipal Corporation depot
+const DEPOT: [number, number] = [30.3245, 78.0467];
 
 function severityHex(score: number): string {
-  if (score >= 8) return "#EF4444";
-  if (score >= 5) return "#F97316";
-  return "#FBBF24";
+  if (score >= 8) return "#FF0000"; // Urgent Danger
+  if (score >= 5) return "#FF6B00"; // Warning
+  return "#FFD600"; // Caution
 }
 
 const colors = [
@@ -38,20 +19,86 @@ const colors = [
   "#EC4899", "#06B6D4", "#84CC16", "#F97316", "#6366F1"
 ];
 
+async function fetchOSRMRoute(coordinates: [number, number][]) {
+  if (coordinates.length < 2) return null;
+  
+  // OSRM expects {lon},{lat}
+  const coordsStr = coordinates.map(c => `${c[1]},${c[0]}`).join(";");
+  const url = `https://router.project-osrm.org/route/v1/driving/${coordsStr}?overview=full&geometries=geojson`;
+  
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    if (data.code === "Ok" && data.routes && data.routes.length > 0) {
+      // GeoJSON coordinates are [lon, lat], Leaflet needs [lat, lon]
+      return data.routes[0].geometry.coordinates.map((c: [number, number]) => [c[1], c[0]]);
+    }
+  } catch (error) {
+    console.error("OSRM Fetch Error:", error);
+  }
+  return null;
+}
+
+const depotIcon = new L.DivIcon({
+  className: "bg-transparent",
+  html: `
+    <div style="display:flex;align-items:center;justify-content:center;">
+      <div style="
+        width: 22px; height: 22px; border-radius: 4px;
+        background: #10B981; border: 2px solid #fff;
+        box-shadow: 0 0 12px rgba(16,185,129,0.5), 0 2px 6px rgba(0,0,0,0.3);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 11px; font-weight: 800; color: #fff;
+      ">D</div>
+    </div>
+  `,
+  iconSize: [22, 22],
+  iconAnchor: [11, 11],
+});
+
 export interface MapProps {
   type: "worker-route" | "admin-routes" | "heatmap";
   data?: any;
 }
 
 export default function BaseMap({ type, data }: MapProps) {
+  const [osrmRoutes, setOsrmRoutes] = useState<Record<string, [number, number][]>>({});
   const center: [number, number] = [30.3165, 78.0322];
   const tileUrl = "https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png";
   const attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
-  const createColoredPin = (color: string) => {
+  useEffect(() => {
+    if (type === "worker-route" && data && data.length > 0) {
+      const stops: [number, number][] = data.map((s: any) => [s.latitude, s.longitude]);
+      // Depot → stops → Depot
+      const fullRoute = [DEPOT, ...stops, DEPOT];
+      fetchOSRMRoute(fullRoute).then(route => {
+        if (route) setOsrmRoutes({ worker: route });
+      });
+    } else if (type === "admin-routes" && data && data.length > 0) {
+      data.forEach((routeObj: any) => {
+        const stops: [number, number][] = (routeObj.stops || []).map((s: any) => [s.latitude, s.longitude]);
+        if (stops.length > 0) {
+          // Depot → stops → Depot
+          const fullRoute = [DEPOT, ...stops, DEPOT];
+          fetchOSRMRoute(fullRoute).then(route => {
+            if (route) setOsrmRoutes(prev => ({ ...prev, [routeObj.id]: route }));
+          });
+        }
+      });
+    }
+  }, [type, data]);
+
+  const createColoredPin = (color: string, isHeatmap = false) => {
     return new L.DivIcon({
       className: "bg-transparent",
-      html: `<div style="background-color: ${color}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.4);"></div>`,
+      html: `
+        <div class="heat-marker-container">
+          <div class="heat-marker" style="background-color: ${color}; color: ${color};">
+            ${isHeatmap ? '<div class="heat-marker-pulse"></div>' : ''}
+          </div>
+        </div>
+      `,
       iconSize: [14, 14],
       iconAnchor: [7, 7],
     });
@@ -59,13 +106,24 @@ export default function BaseMap({ type, data }: MapProps) {
 
   if (type === "worker-route") {
     const stops = data || [];
-    const polylinePositions: [number, number][] = stops.map((s: any) => [s.latitude, s.longitude]);
+    const fallback: [number, number][] = [DEPOT, ...stops.map((s: any) => [s.latitude, s.longitude] as [number, number]), DEPOT];
+    const polylinePositions = osrmRoutes.worker || fallback;
     
     return (
       <MapContainer center={stops.length > 0 ? [stops[0].latitude, stops[0].longitude] : center} zoom={13} zoomControl={false} attributionControl={false} style={{ height: "100%", width: "100%", zIndex: 1 }}>
         <TileLayer url={tileUrl} attribution={attribution} />
-        <Polyline positions={polylinePositions} color="hsl(var(--primary))" weight={4} opacity={0.7} dashArray="5, 10" />
+        <Polyline positions={polylinePositions} color="hsl(var(--primary))" weight={5} opacity={0.8} />
         
+        {/* Depot Marker */}
+        <Marker position={DEPOT} icon={depotIcon}>
+          <Popup>
+            <div className="font-sans p-2">
+              <p className="font-bold text-sm">MCD Office — Depot</p>
+              <p className="text-[10px] text-muted-foreground mt-1">Route start & end point</p>
+            </div>
+          </Popup>
+        </Marker>
+
         {stops.map((s: any) => (
           <Marker key={s.id || s.complaintId} position={[s.latitude, s.longitude]} icon={createColoredPin(severityHex(s.severityScore))}>
             <Popup>
@@ -78,7 +136,7 @@ export default function BaseMap({ type, data }: MapProps) {
                   </span>
                 </div>
                 {s.imageUrl && (
-                  <img src={s.imageUrl} alt="Complaint" className="mt-2 w-full h-24 object-cover rounded-md" />
+                  <img src={s.imageUrl} alt="Complaint" className="mt-2 w-full h-32 object-cover rounded-md border border-border" />
                 )}
               </div>
             </Popup>
@@ -94,21 +152,31 @@ export default function BaseMap({ type, data }: MapProps) {
       <MapContainer center={center} zoom={13} zoomControl={false} attributionControl={false} style={{ height: "100%", width: "100%", zIndex: 1 }}>
         <TileLayer url={tileUrl} attribution={attribution} />
         
+        {/* Depot Marker */}
+        <Marker position={DEPOT} icon={depotIcon}>
+          <Popup>
+            <div className="font-sans p-2">
+              <p className="font-bold text-sm">MCD Office — Depot</p>
+              <p className="text-[10px] text-muted-foreground mt-1">All routes start & return here</p>
+            </div>
+          </Popup>
+        </Marker>
+
         {routes.map((route: any, i: number) => {
-          const polylinePositions: [number, number][] = (route.stops || []).map((s: any) => [s.latitude, s.longitude]);
+          const fallback: [number, number][] = [DEPOT, ...(route.stops || []).map((s: any) => [s.latitude, s.longitude] as [number, number]), DEPOT];
+          const polylinePositions = osrmRoutes[route.id] || fallback;
           const color = colors[i % colors.length];
 
           return (
             <div key={route.id}>
-              <Polyline positions={polylinePositions} color={color} weight={4} opacity={0.7} />
+              <Polyline positions={polylinePositions} color={color} weight={5} opacity={0.8} />
               {(route.stops || []).map((stop: any) => (
                 <Marker key={`${route.id}-${stop.id || stop.complaintId}`} position={[stop.latitude, stop.longitude]} icon={createColoredPin(color)}>
                   <Popup>
                     <div className="font-sans p-1">
-                      <p className="font-bold text-xs uppercase text-muted-foreground mb-1">Route: {route.formattedId}</p>
-                      <p className="text-sm font-semibold">{stop.id || stop.complaintId}</p>
-                      <p className="text-[10px] mt-1">Worker: {route.workerName}</p>
-                      <p className="text-[10px]">Vehicle: {route.vehicleNo}</p>
+                      <p className="font-bold text-[10px] uppercase text-muted-foreground mb-1">Route: {route.formattedId || route.id}</p>
+                      <p className="text-xs font-semibold">{stop.location || stop.id}</p>
+                      <p className="text-[10px] mt-1 text-primary font-medium">Worker: {route.workerName}</p>
                     </div>
                   </Popup>
                 </Marker>
@@ -133,26 +201,28 @@ export default function BaseMap({ type, data }: MapProps) {
             <Marker 
               key={`heat-${i}`} 
               position={[s.latitude, s.longitude]} 
-              icon={createColoredPin(color)}
+              icon={createColoredPin(color, true)}
             >
               <Tooltip permanent={false} direction="top" offset={[0, -10]} opacity={1}>
-                <div className="font-sans w-32">
+                <div className="w-40 bg-card overflow-hidden">
                   {s.imageUrl ? (
-                    <img src={s.imageUrl} alt="Complaint" className="w-full h-20 object-cover rounded-md mb-2 shadow-sm border border-border" />
+                    <img src={s.imageUrl} alt="Complaint" className="w-full h-28 object-cover" />
                   ) : (
-                    <div className="w-full h-20 bg-muted rounded-md flex items-center justify-center mb-2">
+                    <div className="w-full h-24 bg-muted flex items-center justify-center">
                        <span className="text-[10px] text-muted-foreground">No image</span>
                     </div>
                   )}
-                  <p className="text-[10px] font-bold text-center leading-tight">Severity: {s.severityScore}/10</p>
-                  <p className="text-[9px] text-muted-foreground text-center mt-0.5">{s.complaintStatus}</p>
                 </div>
               </Tooltip>
               <Popup>
-                <div className="font-sans">
-                  <p className="font-semibold">Complaint Point</p>
-                  <p className="text-xs mt-1">Status: {s.complaintStatus}</p>
-                  <p className="text-xs">Severity Score: {s.severityScore}</p>
+                <div className="w-64 bg-card">
+                  {s.imageUrl ? (
+                    <img src={s.imageUrl} alt="Complaint" className="w-full h-auto max-h-48 object-contain" />
+                  ) : (
+                    <div className="p-4 text-center">
+                      <p className="text-xs text-muted-foreground">No detailed image available</p>
+                    </div>
+                  )}
                 </div>
               </Popup>
             </Marker>
