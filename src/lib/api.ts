@@ -67,8 +67,8 @@ export const citizenApi = {
   getComplaintDetail: (id: string | number) => apiRequest<any>(`/citizen/complaints/${id}`),
   // GET /citizen/profile
   getProfile: () => apiRequest<any>("/citizen/profile"),
-  // POST /citizen/complaints — submit new complaint (pluralized to fix 404)
-  reportComplaint: (formData: FormData) => apiRequest<string>("/citizen/complaints", {
+  // POST /citizen/complaint — submit new complaint
+  reportComplaint: (formData: FormData) => apiRequest<string>("/citizen/complaint", {
     method: "POST",
     body: formData
   }),
