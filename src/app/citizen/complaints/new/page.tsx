@@ -10,6 +10,8 @@ import Link from "next/link";
 import { useToast } from "@/components/ui/use-toast";
 import { useNotifications } from "@/components/notification-context";
 
+import { getCurrentLocation } from "@/lib/utils";
+
 export default function NewComplaint() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -35,35 +37,54 @@ export default function NewComplaint() {
     if (!imageFile) return;
 
     setLoading(true);
-    // 1. Show immediate "Submitting" notification
-    addNotification({
-      title: "Submitting Report",
-      description: "We are uploading your report to Chokho AI. This may take a moment...",
-      type: "pending",
-    });
-
-    // 2. Redirect immediately
-    router.push("/citizen/dashboard");
-
-    // 3. Trigger API call in the "background"
+    
     try {
+      // 1. Get Location first
+      addNotification({
+        title: "Locating...",
+        description: "Getting your current coordinates for the report.",
+        type: "pending",
+      });
+      
+      const location = await getCurrentLocation();
+      
+      // 2. Show immediate "Submitting" notification
+      addNotification({
+        title: "Submitting Report",
+        description: "We are uploading your report to Chokho AI. This may take a moment...",
+        type: "pending",
+      });
+
+      // 3. Redirect immediately
+      router.push("/citizen/dashboard");
+
+      // 4. Trigger API call in the "background"
       const formData = new FormData();
       formData.append("image", imageFile);
+      formData.append("lat", location.latitude.toString());
+      formData.append("lon", location.longitude.toString());
       
       const response = await citizenApi.reportComplaint(formData);
       
-      // 4. Update with success notification
+      // 5. Update with success notification
       addNotification({
         title: "Report Submitted Successfully",
         description: response || "Thank you for your contribution. Chokho AI is processing your report.",
         type: "success",
       });
     } catch (error) {
-      // 5. Update with error notification
+      setLoading(false);
+      // 6. Update with error notification
       addNotification({
         title: "Submission Failed",
         description: error instanceof Error ? error.message : "Check your connection and try again.",
         type: "error",
+      });
+      
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to submit report",
+        variant: "destructive",
       });
     }
   };

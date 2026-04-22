@@ -10,6 +10,7 @@ import { ArrowLeft, Camera, CheckCircle2, ImageIcon, Loader2 } from "lucide-reac
 import Link from "next/link";
 import { workerApi } from "@/lib/api";
 import { useToast } from "@/components/ui/use-toast";
+import { getCurrentLocation } from "@/lib/utils";
 
 function VerifyCleanupContent() {
   const router = useRouter();
@@ -55,15 +56,19 @@ function VerifyCleanupContent() {
 
     setLoading(true);
     try {
+      const location = await getCurrentLocation();
+      
       const formData = new FormData();
       formData.append("image", afterImageFile);
+      formData.append("lat", location.latitude.toString());
+      formData.append("lon", location.longitude.toString());
       
       await workerApi.verifyCleanup(selectedComplaintId, formData);
       setStep(3);
     } catch (error) {
       toast({
         title: "Submission Failed",
-        description: "Could not upload the verification image. Please try again.",
+        description: error instanceof Error ? error.message : "Could not upload the verification image. Please try again.",
         variant: "destructive",
       });
     } finally {

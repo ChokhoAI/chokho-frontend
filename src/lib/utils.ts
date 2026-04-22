@@ -42,3 +42,41 @@ export function formatDateTime(dateInput: any): string {
     minute: "2-digit"
   });
 }
+
+export function getCurrentLocation(): Promise<{ latitude: number; longitude: number }> {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error("Geolocation is not supported by your browser"));
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        resolve({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+      },
+      (error) => {
+        let message = "Could not get your location";
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            message = "Please enable location access to submit a report";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            message = "Location information is unavailable";
+            break;
+          case error.TIMEOUT:
+            message = "Location request timed out";
+            break;
+        }
+        reject(new Error(message));
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
+  });
+}
