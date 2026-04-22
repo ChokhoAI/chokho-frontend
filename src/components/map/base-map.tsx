@@ -70,8 +70,8 @@ export default function BaseMap({ type, data }: MapProps) {
   useEffect(() => {
     if (type === "worker-route" && data && data.length > 0) {
       const stops: [number, number][] = data.map((s: any) => [s.latitude, s.longitude]);
-      // Depot → stops → Depot
-      const fullRoute = [DEPOT, ...stops, DEPOT];
+      // Depot → stops (one-way, no return)
+      const fullRoute = [DEPOT, ...stops];
       fetchOSRMRoute(fullRoute).then(route => {
         if (route) setOsrmRoutes({ worker: route });
       });
@@ -79,8 +79,8 @@ export default function BaseMap({ type, data }: MapProps) {
       data.forEach((routeObj: any) => {
         const stops: [number, number][] = (routeObj.stops || []).map((s: any) => [s.latitude, s.longitude]);
         if (stops.length > 0) {
-          // Depot → stops → Depot
-          const fullRoute = [DEPOT, ...stops, DEPOT];
+          // Depot → stops (one-way, no return)
+          const fullRoute = [DEPOT, ...stops];
           fetchOSRMRoute(fullRoute).then(route => {
             if (route) setOsrmRoutes(prev => ({ ...prev, [routeObj.id]: route }));
           });
@@ -129,7 +129,7 @@ export default function BaseMap({ type, data }: MapProps) {
 
   if (type === "worker-route") {
     const stops = data || [];
-    const fallback: [number, number][] = [DEPOT, ...stops.map((s: any) => [s.latitude, s.longitude] as [number, number]), DEPOT];
+    const fallback: [number, number][] = [DEPOT, ...stops.map((s: any) => [s.latitude, s.longitude] as [number, number])];
     const polylinePositions = osrmRoutes.worker || fallback;
     
     return (
@@ -208,7 +208,7 @@ export default function BaseMap({ type, data }: MapProps) {
           </Marker>
 
           {routes.map((route: any, i: number) => {
-            const fallback: [number, number][] = [DEPOT, ...(route.stops || []).map((s: any) => [s.latitude, s.longitude] as [number, number]), DEPOT];
+            const fallback: [number, number][] = [DEPOT, ...(route.stops || []).map((s: any) => [s.latitude, s.longitude] as [number, number])];
             const polylinePositions = osrmRoutes[route.id] || fallback;
             const color = colors[i % colors.length];
 
