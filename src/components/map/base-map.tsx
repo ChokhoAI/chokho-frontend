@@ -104,6 +104,29 @@ export default function BaseMap({ type, data }: MapProps) {
     });
   };
 
+  // Numbered marker for worker route stops showing sequence
+  const createSequencePin = (seqNo: number, color: string, isCleaned: boolean) => {
+    const bg = isCleaned ? "#10B981" : color;
+    const opacity = isCleaned ? "0.5" : "1";
+    return new L.DivIcon({
+      className: "bg-transparent",
+      html: `
+        <div style="display:flex;align-items:center;justify-content:center;opacity:${opacity};">
+          <div style="
+            width: 26px; height: 26px; border-radius: 50%;
+            background: ${bg}; border: 2.5px solid #fff;
+            box-shadow: 0 0 10px ${bg}66, 0 2px 6px rgba(0,0,0,0.4);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 800; color: #fff;
+            font-family: system-ui, -apple-system, sans-serif;
+          ">${isCleaned ? '✓' : seqNo}</div>
+        </div>
+      `,
+      iconSize: [26, 26],
+      iconAnchor: [13, 13],
+    });
+  };
+
   if (type === "worker-route") {
     const stops = data || [];
     const fallback: [number, number][] = [DEPOT, ...stops.map((s: any) => [s.latitude, s.longitude] as [number, number]), DEPOT];
@@ -112,7 +135,11 @@ export default function BaseMap({ type, data }: MapProps) {
     return (
       <MapContainer center={stops.length > 0 ? [stops[0].latitude, stops[0].longitude] : center} zoom={13} zoomControl={false} attributionControl={false} style={{ height: "100%", width: "100%", zIndex: 1 }}>
         <TileLayer url={tileUrl} attribution={attribution} />
-        <Polyline positions={polylinePositions} color="hsl(var(--primary))" weight={5} opacity={0.8} />
+        
+        {/* Route outline for depth */}
+        <Polyline positions={polylinePositions} color="#000000" weight={5} opacity={0.3} />
+        {/* Main route line — thin & clean */}
+        <Polyline positions={polylinePositions} color="hsl(var(--primary))" weight={3} opacity={0.9} dashArray="8 4" />
         
         {/* Depot Marker */}
         <Marker position={DEPOT} icon={depotIcon}>
@@ -124,24 +151,41 @@ export default function BaseMap({ type, data }: MapProps) {
           </Popup>
         </Marker>
 
-        {stops.map((s: any) => (
-          <Marker key={s.id || s.complaintId} position={[s.latitude, s.longitude]} icon={createColoredPin(severityHex(s.severityScore))}>
-            <Popup>
-              <div className="font-sans">
-                <p className="font-semibold text-sm mb-1">{s.location || s.area}</p>
-                <div className="flex gap-2">
-                  <span className="text-xs text-muted-foreground">ID: {s.id || s.complaintId}</span>
-                  <span className="text-[10px] px-1.5 rounded-sm" style={{ backgroundColor: severityHex(s.severityScore) + '20', color: severityHex(s.severityScore) }}>
-                    Sequence: {s.sequenceNo}
-                  </span>
+        {stops.map((s: any, idx: number) => {
+          const isCleaned = s.status === "CLEANED" || s.complaintStatus === "RESOLVED" || s.complaintStatus === "CLEANED";
+          const seqNo = s.sequenceNo || idx + 1;
+          return (
+            <Marker key={s.id || s.complaintId} position={[s.latitude, s.longitude]} icon={createSequencePin(seqNo, severityHex(s.severityScore), isCleaned)}>
+              <Popup>
+                <div className="font-sans p-2 min-w-[180px]">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <div style={{
+                      width: '24px', height: '24px', borderRadius: '50%',
+                      background: isCleaned ? '#10B981' : severityHex(s.severityScore),
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '11px', fontWeight: '800', color: '#fff',
+                    }}>{isCleaned ? '✓' : seqNo}</div>
+                    <div>
+                      <p style={{ fontWeight: '600', fontSize: '13px', margin: 0 }}>{s.location || s.area || 'Stop'}</p>
+                      <p style={{ fontSize: '10px', color: '#888', margin: 0 }}>Stop #{seqNo}</p>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '10px', padding: '2px 6px', borderRadius: '4px', background: severityHex(s.severityScore) + '20', color: severityHex(s.severityScore), fontWeight: '600' }}>
+                      Severity: {s.severityScore}
+                    </span>
+                    <span style={{ fontSize: '10px', padding: '2px 6px', borderRadius: '4px', background: isCleaned ? '#10B98120' : '#FFD60020', color: isCleaned ? '#10B981' : '#FFD600', fontWeight: '600' }}>
+                      {isCleaned ? 'Cleaned' : 'Pending'}
+                    </span>
+                  </div>
+                  {s.imageUrl && (
+                    <img src={s.imageUrl} alt="Complaint" style={{ marginTop: '8px', width: '100%', height: '80px', objectFit: 'cover', borderRadius: '6px' }} />
+                  )}
                 </div>
-                {s.imageUrl && (
-                  <img src={s.imageUrl} alt="Complaint" className="mt-2 w-full h-32 object-cover rounded-md border border-border" />
-                )}
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+              </Popup>
+            </Marker>
+          );
+        })}
       </MapContainer>
     );
   }
@@ -149,42 +193,84 @@ export default function BaseMap({ type, data }: MapProps) {
   if (type === "admin-routes") {
     const routes = data || [];
     return (
-      <MapContainer center={center} zoom={13} zoomControl={false} attributionControl={false} style={{ height: "100%", width: "100%", zIndex: 1 }}>
-        <TileLayer url={tileUrl} attribution={attribution} />
-        
-        {/* Depot Marker */}
-        <Marker position={DEPOT} icon={depotIcon}>
-          <Popup>
-            <div className="font-sans p-2">
-              <p className="font-bold text-sm">MCD Office — Depot</p>
-              <p className="text-[10px] text-muted-foreground mt-1">All routes start & return here</p>
-            </div>
-          </Popup>
-        </Marker>
+      <div style={{ position: 'relative', height: '100%', width: '100%' }}>
+        <MapContainer center={center} zoom={13} zoomControl={false} attributionControl={false} style={{ height: "100%", width: "100%", zIndex: 1 }}>
+          <TileLayer url={tileUrl} attribution={attribution} />
+          
+          {/* Depot Marker */}
+          <Marker position={DEPOT} icon={depotIcon}>
+            <Popup>
+              <div className="font-sans p-2">
+                <p className="font-bold text-sm">MCD Office — Depot</p>
+                <p className="text-[10px] text-muted-foreground mt-1">All routes start & return here</p>
+              </div>
+            </Popup>
+          </Marker>
 
-        {routes.map((route: any, i: number) => {
-          const fallback: [number, number][] = [DEPOT, ...(route.stops || []).map((s: any) => [s.latitude, s.longitude] as [number, number]), DEPOT];
-          const polylinePositions = osrmRoutes[route.id] || fallback;
-          const color = colors[i % colors.length];
+          {routes.map((route: any, i: number) => {
+            const fallback: [number, number][] = [DEPOT, ...(route.stops || []).map((s: any) => [s.latitude, s.longitude] as [number, number]), DEPOT];
+            const polylinePositions = osrmRoutes[route.id] || fallback;
+            const color = colors[i % colors.length];
 
-          return (
-            <div key={route.id}>
-              <Polyline positions={polylinePositions} color={color} weight={5} opacity={0.8} />
-              {(route.stops || []).map((stop: any) => (
-                <Marker key={`${route.id}-${stop.id || stop.complaintId}`} position={[stop.latitude, stop.longitude]} icon={createColoredPin(color)}>
-                  <Popup>
-                    <div className="font-sans p-1">
-                      <p className="font-bold text-[10px] uppercase text-muted-foreground mb-1">Route: {route.formattedId || route.id}</p>
-                      <p className="text-xs font-semibold">{stop.location || stop.id}</p>
-                      <p className="text-[10px] mt-1 text-primary font-medium">Worker: {route.workerName}</p>
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
+            return (
+              <div key={route.id}>
+                {/* Route outline for depth */}
+                <Polyline positions={polylinePositions} color="#000000" weight={4} opacity={0.2} />
+                {/* Main route line — thinner */}
+                <Polyline positions={polylinePositions} color={color} weight={2.5} opacity={0.85} />
+                {(route.stops || []).map((stop: any, stopIdx: number) => (
+                  <Marker key={`${route.id}-${stop.id || stop.complaintId}`} position={[stop.latitude, stop.longitude]} icon={createColoredPin(color)}>
+                    <Popup>
+                      <div className="font-sans p-2 min-w-[160px]">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <div style={{
+                            width: '8px', height: '8px', borderRadius: '50%',
+                            background: color, flexShrink: 0,
+                          }}></div>
+                          <p style={{ fontSize: '10px', fontWeight: '700', color: '#888', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            {route.vehicleNo || route.formattedId || route.id}
+                          </p>
+                        </div>
+                        <p style={{ fontWeight: '600', fontSize: '13px', margin: '0 0 4px 0' }}>{stop.location || stop.id}</p>
+                        <p style={{ fontSize: '10px', color: color, fontWeight: '600', margin: 0 }}>Worker: {route.workerName || 'Unassigned'}</p>
+                      </div>
+                    </Popup>
+                  </Marker>
+                ))}
+              </div>
+            );
+          })}
+        </MapContainer>
+
+        {/* Legend Overlay — positioned outside MapContainer */}
+        {routes.length > 0 && (
+          <div className="route-legend-overlay">
+            <div className="route-legend-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6l3 1 3-1 3 1 3-1 3 1V17l-3-1-3 1-3-1-3 1-3-1z"/></svg>
+              Routes
             </div>
-          );
-        })}
-      </MapContainer>
+            {routes.map((route: any, i: number) => {
+              const color = colors[i % colors.length];
+              return (
+                <div key={route.id} className="route-legend-item">
+                  <div className="route-legend-swatch" style={{ backgroundColor: color, boxShadow: `0 0 6px ${color}55` }}></div>
+                  <div className="route-legend-info">
+                    <span className="route-legend-vehicle">{route.vehicleNo || `Route ${i + 1}`}</span>
+                    <span className="route-legend-worker">{route.workerName || 'Unassigned'}</span>
+                  </div>
+                </div>
+              );
+            })}
+            <div className="route-legend-item">
+              <div className="route-legend-swatch" style={{ backgroundColor: '#10B981', borderRadius: '3px', boxShadow: '0 0 6px #10B98155' }}></div>
+              <div className="route-legend-info">
+                <span className="route-legend-vehicle">Depot</span>
+                <span className="route-legend-worker">MCD Office</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     );
   }
 
