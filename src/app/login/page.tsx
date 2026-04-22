@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -18,6 +18,11 @@ export default function LoginPage() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    // Clear old tokens to prevent "token expired" issues on login
+    localStorage.clear();
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

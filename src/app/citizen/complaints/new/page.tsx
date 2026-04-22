@@ -80,7 +80,6 @@ export default function NewComplaint() {
       <input 
         type="file" 
         accept="image/*" 
-        capture="environment"
         ref={fileInputRef}
         onChange={handleImageSelect}
         className="hidden"
@@ -96,7 +95,7 @@ export default function NewComplaint() {
               className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all"
             >
               <Camera className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">Tap to take a photo</p>
+              <p className="text-sm text-muted-foreground">Tap to take photo or upload from gallery</p>
             </div>
           ) : (
             <div className="relative rounded-lg overflow-hidden">

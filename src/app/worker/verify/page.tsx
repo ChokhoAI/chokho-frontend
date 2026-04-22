@@ -94,7 +94,6 @@ function VerifyCleanupContent() {
       <input 
         type="file" 
         accept="image/*" 
-        capture="environment"
         ref={fileInputRef}
         onChange={handleImageSelect}
         className="hidden"
@@ -156,7 +155,7 @@ function VerifyCleanupContent() {
                 className="border-2 border-dashed border-border rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all"
               >
                 <Camera className="h-6 w-6 text-muted-foreground mx-auto mb-1" />
-                <p className="text-[10px] text-muted-foreground">Tap to record cleanup proof</p>
+                <p className="text-[10px] text-muted-foreground">Tap to take photo or upload proof</p>
               </div>
             ) : (
               <div className="relative">

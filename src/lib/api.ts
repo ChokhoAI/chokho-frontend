@@ -25,6 +25,13 @@ export async function apiRequest<T>(
     headers,
   });
 
+  if (response.status === 401) {
+    if (typeof window !== "undefined") {
+      localStorage.clear();
+      window.location.href = "/login";
+    }
+  }
+
   if (!response.ok) {
     const errorData = await response.text();
     throw new Error(errorData || "Something went wrong");
@@ -60,8 +67,8 @@ export const citizenApi = {
   getComplaintDetail: (id: string | number) => apiRequest<any>(`/citizen/complaints/${id}`),
   // GET /citizen/profile
   getProfile: () => apiRequest<any>("/citizen/profile"),
-  // POST /citizen/complaint — submit new complaint
-  reportComplaint: (formData: FormData) => apiRequest<string>("/citizen/complaint", {
+  // POST /citizen/complaints — submit new complaint (pluralized to fix 404)
+  reportComplaint: (formData: FormData) => apiRequest<string>("/citizen/complaints", {
     method: "POST",
     body: formData
   }),
