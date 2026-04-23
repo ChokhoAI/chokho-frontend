@@ -59,9 +59,10 @@ const depotIcon = new L.DivIcon({
 export interface MapProps {
   type: "worker-route" | "admin-routes" | "heatmap";
   data?: any;
+  workerLocation?: [number, number] | null;
 }
 
-export default function BaseMap({ type, data }: MapProps) {
+export default function BaseMap({ type, data, workerLocation }: MapProps) {
   const [osrmRoutes, setOsrmRoutes] = useState<Record<string, [number, number][]>>({});
   const center: [number, number] = [30.3165, 78.0322];
   const tileUrl = "https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png";
@@ -69,17 +70,19 @@ export default function BaseMap({ type, data }: MapProps) {
 
   useEffect(() => {
     if (type === "worker-route" && data && data.length > 0) {
-      const stops: [number, number][] = data.map((s: any) => [s.latitude, s.longitude]);
-      // Depot → stops (one-way, no return)
+      const sorted = [...data].sort((a: any, b: any) => (a.sequenceNo || 0) - (b.sequenceNo || 0));
+      const stops: [number, number][] = sorted.map((s: any) => [s.latitude, s.longitude]);
+      // Depot → stops in sequence order (one-way, no return)
       const fullRoute = [DEPOT, ...stops];
       fetchOSRMRoute(fullRoute).then(route => {
         if (route) setOsrmRoutes({ worker: route });
       });
     } else if (type === "admin-routes" && data && data.length > 0) {
       data.forEach((routeObj: any) => {
-        const stops: [number, number][] = (routeObj.stops || []).map((s: any) => [s.latitude, s.longitude]);
+        const sorted = [...(routeObj.stops || [])].sort((a: any, b: any) => (a.sequenceNo || 0) - (b.sequenceNo || 0));
+        const stops: [number, number][] = sorted.map((s: any) => [s.latitude, s.longitude]);
         if (stops.length > 0) {
-          // Depot → stops (one-way, no return)
+          // Depot → stops in sequence order (one-way, no return)
           const fullRoute = [DEPOT, ...stops];
           fetchOSRMRoute(fullRoute).then(route => {
             if (route) setOsrmRoutes(prev => ({ ...prev, [routeObj.id]: route }));
@@ -128,18 +131,21 @@ export default function BaseMap({ type, data }: MapProps) {
   };
 
   if (type === "worker-route") {
-    const stops = data || [];
-    const fallback: [number, number][] = [DEPOT, ...stops.map((s: any) => [s.latitude, s.longitude] as [number, number])];
+    const rawStops = data || [];
+    // Sort by sequence number so the route line connects 1→2→3→...
+    const stops = [...rawStops].sort((a: any, b: any) => (a.sequenceNo || 0) - (b.sequenceNo || 0));
+    const sortedCoords: [number, number][] = stops.map((s: any) => [s.latitude, s.longitude] as [number, number]);
+    const fallback: [number, number][] = [DEPOT, ...sortedCoords];
     const polylinePositions = osrmRoutes.worker || fallback;
     
     return (
       <MapContainer center={stops.length > 0 ? [stops[0].latitude, stops[0].longitude] : center} zoom={13} zoomControl={false} attributionControl={false} style={{ height: "100%", width: "100%", zIndex: 1 }}>
         <TileLayer url={tileUrl} attribution={attribution} />
         
-        {/* Route outline for depth */}
-        <Polyline positions={polylinePositions} color="#000000" weight={5} opacity={0.3} />
-        {/* Main route line — thin & clean */}
-        <Polyline positions={polylinePositions} color="hsl(var(--primary))" weight={3} opacity={0.9} dashArray="8 4" />
+        {/* Route outline for depth — white glow visible on dark map */}
+        <Polyline positions={polylinePositions} color="#ffffff" weight={6} opacity={0.15} />
+        {/* Main route line — orange, dashed */}
+        <Polyline positions={polylinePositions} color="#F97316" weight={3} opacity={0.9} dashArray="8 4" />
         
         {/* Depot Marker */}
         <Marker position={DEPOT} icon={depotIcon}>
@@ -186,6 +192,28 @@ export default function BaseMap({ type, data }: MapProps) {
             </Marker>
           );
         })}
+
+        {/* Worker's live location — pulsing blue dot */}
+        {workerLocation && (
+          <Marker position={workerLocation} icon={new L.DivIcon({
+            className: 'bg-transparent',
+            html: `
+              <div class="worker-location-marker">
+                <div class="worker-location-dot"></div>
+                <div class="worker-location-pulse"></div>
+              </div>
+            `,
+            iconSize: [24, 24],
+            iconAnchor: [12, 12],
+          })}>
+            <Popup>
+              <div className="font-sans p-2">
+                <p style={{ fontWeight: '600', fontSize: '13px', margin: 0 }}>📍 Your Location</p>
+                <p style={{ fontSize: '10px', color: '#888', margin: '4px 0 0 0' }}>Live GPS position</p>
+              </div>
+            </Popup>
+          </Marker>
+        )}
       </MapContainer>
     );
   }
@@ -208,35 +236,51 @@ export default function BaseMap({ type, data }: MapProps) {
           </Marker>
 
           {routes.map((route: any, i: number) => {
-            const fallback: [number, number][] = [DEPOT, ...(route.stops || []).map((s: any) => [s.latitude, s.longitude] as [number, number])];
+            const rawStops = route.stops || [];
+            const sortedStops = [...rawStops].sort((a: any, b: any) => (a.sequenceNo || 0) - (b.sequenceNo || 0));
+            const sortedCoords: [number, number][] = sortedStops.map((s: any) => [s.latitude, s.longitude] as [number, number]);
+            const fallback: [number, number][] = [DEPOT, ...sortedCoords];
             const polylinePositions = osrmRoutes[route.id] || fallback;
             const color = colors[i % colors.length];
 
             return (
               <div key={route.id}>
-                {/* Route outline for depth */}
-                <Polyline positions={polylinePositions} color="#000000" weight={4} opacity={0.2} />
-                {/* Main route line — thinner */}
-                <Polyline positions={polylinePositions} color={color} weight={2.5} opacity={0.85} />
-                {(route.stops || []).map((stop: any, stopIdx: number) => (
-                  <Marker key={`${route.id}-${stop.id || stop.complaintId}`} position={[stop.latitude, stop.longitude]} icon={createColoredPin(color)}>
-                    <Popup>
-                      <div className="font-sans p-2 min-w-[160px]">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-                          <div style={{
-                            width: '8px', height: '8px', borderRadius: '50%',
-                            background: color, flexShrink: 0,
-                          }}></div>
-                          <p style={{ fontSize: '10px', fontWeight: '700', color: '#888', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                            {route.vehicleNo || route.formattedId || route.id}
-                          </p>
+                {/* Route outline — white glow visible on dark map */}
+                <Polyline positions={polylinePositions} color="#ffffff" weight={6} opacity={0.1} />
+                {/* Main route line — dashed, colored */}
+                <Polyline positions={polylinePositions} color={color} weight={3} opacity={0.9} dashArray="8 4" />
+                {sortedStops.map((stop: any, stopIdx: number) => {
+                  const seqNo = stop.sequenceNo || stopIdx + 1;
+                  const isCleaned = stop.status === "CLEANED" || stop.complaintStatus === "RESOLVED" || stop.complaintStatus === "CLEANED";
+                  return (
+                    <Marker key={`${route.id}-${stop.id || stop.complaintId}`} position={[stop.latitude, stop.longitude]} icon={createSequencePin(seqNo, color, isCleaned)}>
+                      <Popup>
+                        <div className="font-sans p-2 min-w-[180px]">
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                            <div style={{
+                              width: '24px', height: '24px', borderRadius: '50%',
+                              background: isCleaned ? '#10B981' : color,
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontSize: '11px', fontWeight: '800', color: '#fff',
+                            }}>{isCleaned ? '✓' : seqNo}</div>
+                            <div>
+                              <p style={{ fontWeight: '600', fontSize: '13px', margin: 0 }}>{stop.location || stop.area || 'Stop'}</p>
+                              <p style={{ fontSize: '10px', color: '#888', margin: 0 }}>Stop #{seqNo} • {route.vehicleNo || route.formattedId || route.id}</p>
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: '10px', padding: '2px 6px', borderRadius: '4px', background: color + '20', color: color, fontWeight: '600' }}>
+                              {route.workerName || 'Unassigned'}
+                            </span>
+                            <span style={{ fontSize: '10px', padding: '2px 6px', borderRadius: '4px', background: isCleaned ? '#10B98120' : '#FFD60020', color: isCleaned ? '#10B981' : '#FFD600', fontWeight: '600' }}>
+                              {isCleaned ? 'Cleaned' : 'Pending'}
+                            </span>
+                          </div>
                         </div>
-                        <p style={{ fontWeight: '600', fontSize: '13px', margin: '0 0 4px 0' }}>{stop.location || stop.id}</p>
-                        <p style={{ fontSize: '10px', color: color, fontWeight: '600', margin: 0 }}>Worker: {route.workerName || 'Unassigned'}</p>
-                      </div>
-                    </Popup>
-                  </Marker>
-                ))}
+                      </Popup>
+                    </Marker>
+                  );
+                })}
               </div>
             );
           })}

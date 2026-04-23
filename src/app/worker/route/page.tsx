@@ -15,8 +15,20 @@ export default function WorkerRoute() {
   const [stops, setStops] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [ending, setEnding] = useState(false);
+  const [workerLocation, setWorkerLocation] = useState<[number, number] | null>(null);
   const router = useRouter();
   const { toast } = useToast();
+
+  // Track worker's live location
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => setWorkerLocation([pos.coords.latitude, pos.coords.longitude]),
+      (err) => console.warn("Geolocation error:", err.message),
+      { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
+    );
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, []);
 
   const fetchRoute = async () => {
     try {
@@ -79,7 +91,7 @@ export default function WorkerRoute() {
       {/* Map */}
       <div className="overflow-hidden rounded-xl text-black z-0 relative">
         <div className="h-[300px] sm:h-[400px] lg:h-[500px] relative z-0">
-          <MapDynamic type="worker-route" data={stops} />
+          <MapDynamic type="worker-route" data={stops} workerLocation={workerLocation} />
           <Badge className="absolute top-3 right-3 text-[10px] z-10 shadow-md">LIVE</Badge>
         </div>
       </div>
