@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowLeft } from "lucide-react";
 import { authApi } from "@/lib/api";
 
 export default function LoginPage() {
@@ -49,6 +49,11 @@ export default function LoginPage() {
     <div className="min-h-screen w-full flex items-center justify-center px-4 bg-background relative overflow-x-hidden">
       {/* Ambient background */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-primary/3 rounded-full blur-[150px] pointer-events-none" />
+
+      {/* Back button */}
+      <Link href="/" className="absolute top-5 left-5 p-2 rounded-full hover:bg-muted transition-colors border border-border cursor-pointer flex items-center justify-center z-10">
+        <ArrowLeft className="h-4 w-4" />
+      </Link>
 
       <Card className="w-full max-w-sm border-border/50 bg-white/35 dark:bg-card/80 backdrop-blur-sm">
         <CardHeader className="text-center space-y-4">
@@ -121,7 +126,7 @@ export default function LoginPage() {
       {/* Footer */}
       <div className="absolute bottom-6 text-center">
         <p className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest opacity-80">
-          Towards a Trash-Free Uttarakhand — CHOKHO
+          Towards a Trash-Free Uttarakhand
         </p>
       </div>
     </div>
